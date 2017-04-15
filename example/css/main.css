@@ -1,0 +1,84 @@
+body, html, ul, li, div {
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+}
+
+body, html {
+  height: 100%;
+  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", SimSun, sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+header {
+  background-color: #409D76;
+  position: relative;
+  text-align: center;
+  color: #fff;
+  padding: 10px;
+}
+
+.header h1{
+  font-size: 55px;
+}
+
+.header h1 span {
+  font-size: 55px;
+  color: #17533A;
+  font-weight: bold;
+}
+
+.btn {
+  display: inline-block;
+  padding: 4px 15px;
+  cursor: pointer;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  background-image: none;
+  border-radius: 4px;
+  margin: 0 5px;
+
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+  transition: all .3s ease;
+}
+
+.btn:hover, .active {
+  background: #216F4E;
+  color: #fff;
+}
+
+.btn:active {
+  background: #323232;
+  color: #fff;
+}
+
+.describe {
+    padding: 30px 15px;
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 23px;
+}
+
+.fork-github {
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 9;
+}
+
+section {
+  text-align: center;
+}

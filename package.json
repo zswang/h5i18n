@@ -1,0 +1,27 @@
+{
+  "name": "h5i18n",
+  "version": "0.0.0",
+  "description": "A mobile page of internationalization development framework",
+  "scripts": {
+    "_update_version": "node version.js",
+    "debug": "gulp debug",
+    "dist": "npm run _update_version && gulp dist"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-connect": "^5.0.0",
+    "gulp-jdists": "^2.0.0",
+    "gulp-open": "^2.0.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-typescript": "^3.1.6",
+    "gulp-uglify": "^2.1.2",
+    "h5tap": "0.0.4",
+    "jdists": "^2.0.4",
+    "typescript": "^2.2.2"
+  },
+  "files": [
+    "README.md",
+    "h5i18n.js",
+    "h5i18n.min.js"
+  ]
+}
