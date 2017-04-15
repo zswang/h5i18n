@@ -1,0 +1,33 @@
+{
+  "name": "h5i18n",
+  "version": "0.0.2",
+  "homepage": "https://github.com/zswang/h5i18n",
+  "description": "A mobile page of internationalization development framework",
+  "main": "h5i18n.js",
+  "moduleType": [
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "i18n"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "seajs": "2.3.0",
+    "requirejs": "2.1.15"
+  },
+  "ignore": [
+    "tests",
+    "src",
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/components",
+    "test",
+    "tests"
+  ],
+  "author": {
+    "name": "zswang",
+    "url": "http://weibo.com/zswang"
+  }
+}

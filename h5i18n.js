@@ -1,6 +1,17 @@
 (function (exportName) {
   /*<function name="Languages">*/
 /**
+ * @file h5i18n
+ * @url https://github.com/zswang/h5i18n.git
+ * 
+ A mobile page of internationalization development framework
+ * @author
+ *   zswang (http://weibo.com/zswang)
+ * @version 0.0.2
+ * @date 2017-04-15
+ * @license MIT
+ */
+/**
  * 翻译
  *
  * see @https://github.com/jaywcjlove/translater.js

@@ -1,7 +1,11 @@
 {
   "name": "h5i18n",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A mobile page of internationalization development framework",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zswang/h5i18n.git"
+  },
   "scripts": {
     "_update_version": "node version.js",
     "debug": "gulp debug",
