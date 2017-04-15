@@ -1,6 +1,90 @@
 (function (exportName) {
   /*<function name="Languages">*/
+/**
+ * 翻译
+ *
+ * see @https://github.com/jaywcjlove/translater.js
+ */
+/**
+ * 需要处理元素属性集合
+ */
 var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder'];
+/**
+ * @example Languages:text default option
+  ```html
+  <span>中文1<!--{en}English1--></span>
+  <span>中文2<!--{en}English2--></span>
+  <span>中文3<!--{en}English3--><!--{cn}中文3--></span>
+  <span>Hello<!--World!--></span>
+  ```
+  ```js
+  var langs = new h5i18n.Languages();
+  langs.update('en');
+  var span1 = document.querySelector('span:nth-of-type(1)');
+  console.log(span1.innerHTML);
+  // > <!--{en}-->English1<!--/{en}--><!--{cn}中文1-->
+  var span2 = document.querySelector('span:nth-of-type(2)');
+  console.log(span2.innerHTML);
+  // > <!--{en}-->English2<!--/{en}--><!--{cn}中文2-->
+  langs.update(); // cn
+  console.log(span1.innerHTML);
+  // > <!--{en}English1--><!--{cn}-->中文1<!--/{cn}-->
+  console.log(span2.innerHTML);
+  // > <!--{en}English2--><!--{cn}-->中文2<!--/{cn}-->
+  langs.update('none');
+  console.log(span1.innerHTML);
+  // > <!--{en}English1--><!--{cn}中文1--><!--{cn}-->中文1<!--/{cn}-->
+  console.log(span2.innerHTML);
+  // > <!--{en}English2--><!--{cn}中文2--><!--{cn}-->中文2<!--/{cn}-->
+  ```
+ * @example Languages:attr
+  ```html
+  <img src="img/cn.png" data-lang-src="<!--{en}img/en.png-->">
+  <img src="img/cn.png" data-lang-src="<!--{cn}img/cn.png--><!--{en}img/en.png-->">
+  <img src="img/cn.png" data-lang-src="none">
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  langs.update('en');
+  var img = document.querySelector('img');
+  console.log(img.getAttribute('src'));
+  // > img/en.png
+  langs.update('none');
+  var img = document.querySelector('img');
+  console.log(img.getAttribute('src'));
+  // > img/cn.png
+  ```
+ * @example Languages:update default
+  ```html
+  <span>中文1<!--{en}English1--></span>
+  <span>中文2<!--{en}English2--></span>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var span1 = document.querySelector('span:nth-of-type(1)');
+  langs.update('en', span1);
+  console.log(span1.innerHTML);
+  // > <!--{en}-->English1<!--/{en}--><!--{cn}中文1-->
+  var span2 = document.querySelector('span:nth-of-type(2)');
+  console.log(span2.innerHTML);
+  // > 中文2<!--{en}English2-->
+  ```
+ * @example Languages:update selector
+  ```html
+  <span>中文1<!--{en}English1--></span>
+  <span>中文2<!--{en}English2--></span>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var span1 = document.querySelector('span:nth-of-type(1)');
+  langs.update('en', 'span:nth-of-type(1)');
+  console.log(span1.innerHTML);
+  // > <!--{en}-->English1<!--/{en}--><!--{cn}中文1-->
+  var span2 = document.querySelector('span:nth-of-type(2)');
+  console.log(span2.innerHTML);
+  // > 中文2<!--{en}English2-->
+  ```
+ */
 var Languages = (function () {
     /**
      * 构造多语言工具
@@ -8,20 +92,9 @@ var Languages = (function () {
      * @param lang 语言
      */
     function Languages(_defaultLang) {
-        if (_defaultLang === void 0) { _defaultLang = 'en'; }
+        if (_defaultLang === void 0) { _defaultLang = 'cn'; }
         this._defaultLang = _defaultLang;
     }
-    Object.defineProperty(Languages.prototype, "lang", {
-        set: function (value) {
-            if (this._lang === value) {
-                return;
-            }
-            this._lang = value;
-            this.update();
-        },
-        enumerable: true,
-        configurable: true
-    });
     /**
      * 解析文本为语言表达式
      *
@@ -61,21 +134,21 @@ var Languages = (function () {
     /**
      * 将语言表达式编译为文本
      *
-     * @param langExpression
+     * @param _lang 语言
+     * @param langExpression 语言表达式对象
      */
-    Languages.prototype.build = function (langExpression) {
-        var _this = this;
+    Languages.prototype.build = function (_lang, langExpression) {
         var result = '';
         Object.keys(langExpression.optionsLang).forEach(function (lang) {
             var text = langExpression.optionsLang[lang];
-            if (lang === _this._lang) {
+            if (lang === _lang) {
                 result += "<!--{" + lang + "}-->" + text + "<!--/{" + lang + "}-->";
             }
             else {
                 result += "<!--{" + lang + "}" + text + "-->";
             }
         });
-        if (!langExpression.optionsLang[this._lang]) {
+        if (!langExpression.optionsLang[_lang]) {
             var lang = this._defaultLang;
             var text = langExpression.optionsLang[this._defaultLang];
             result += "<!--{" + lang + "}-->" + text + "<!--/{" + lang + "}-->";
@@ -85,10 +158,12 @@ var Languages = (function () {
     /**
      * 更新语言
      *
-     * @param element 更新的节点，默认为全部
+     * @param lang 语言
+     * @param parent 更新的节点，默认为全部
      */
-    Languages.prototype.update = function (parent) {
+    Languages.prototype.update = function (_lang, parent) {
         var _this = this;
+        _lang = _lang || this._defaultLang;
         if (!parent) {
             parent = document.documentElement;
         }
@@ -111,7 +186,7 @@ var Languages = (function () {
         }
         processNodes.forEach(function (node, index) {
             if (processTexts[index]) {
-                node.innerHTML = _this.build(processTexts[index]);
+                node.innerHTML = _this.build(_lang, processTexts[index]);
             }
         });
         languages_attrs.forEach(function (attr) {
@@ -126,8 +201,8 @@ var Languages = (function () {
                 if (!langExpression.optionsLang[_this._defaultLang]) {
                     langExpression.optionsLang[_this._defaultLang] = element.getAttribute(attr);
                 }
-                element.setAttribute(langAttr, _this.build(langExpression));
-                element.setAttribute(attr, langExpression.optionsLang[_this._lang] ||
+                element.setAttribute(langAttr, _this.build(_lang, langExpression));
+                element.setAttribute(attr, langExpression.optionsLang[_lang] ||
                     langExpression.optionsLang[_this._defaultLang]);
             });
         });

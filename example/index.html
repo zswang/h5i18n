@@ -63,7 +63,7 @@
     h5tap('body', '[cmd]', function (element) {
       var cmd = element.getAttribute('cmd');
       cmd.replace(/lang-([\w-]+)/, function (all, lang) {
-        languages.lang = lang;
+        languages.update(lang);
         [].slice.call(element.parentNode.querySelectorAll('.active')).forEach(function (item) {
           item.classList.remove('active');
         });

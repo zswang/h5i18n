@@ -17,20 +17,106 @@ interface LangExpression {
    */
   defaultText?: string
 }
+
+/*<function name="Languages">*/
 /**
  * 翻译
  *
  * see @https://github.com/jaywcjlove/translater.js
  */
-/*<function name="Languages">*/
+/**
+ * 需要处理元素属性集合
+ */
 let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder']
 
-class Languages {
+/**
+ * @example Languages:text default option
+  ```html
+  <span>中文1<!--{en}English1--></span>
+  <span>中文2<!--{en}English2--></span>
+  <span>中文3<!--{en}English3--><!--{cn}中文3--></span>
+  <span>Hello<!--World!--></span>
+  ```
+  ```js
+  var langs = new h5i18n.Languages();
+  langs.update('en');
 
-  /**
-   * 当前语言
-   */
-  _lang: string
+  var span1 = document.querySelector('span:nth-of-type(1)');
+  console.log(span1.innerHTML);
+  // > <!--{en}-->English1<!--/{en}--><!--{cn}中文1-->
+
+  var span2 = document.querySelector('span:nth-of-type(2)');
+  console.log(span2.innerHTML);
+  // > <!--{en}-->English2<!--/{en}--><!--{cn}中文2-->
+
+  langs.update(); // cn
+  console.log(span1.innerHTML);
+  // > <!--{en}English1--><!--{cn}-->中文1<!--/{cn}-->
+
+  console.log(span2.innerHTML);
+  // > <!--{en}English2--><!--{cn}-->中文2<!--/{cn}-->
+
+  langs.update('none');
+  console.log(span1.innerHTML);
+  // > <!--{en}English1--><!--{cn}中文1--><!--{cn}-->中文1<!--/{cn}-->
+
+  console.log(span2.innerHTML);
+  // > <!--{en}English2--><!--{cn}中文2--><!--{cn}-->中文2<!--/{cn}-->
+  ```
+ * @example Languages:attr
+  ```html
+  <img src="img/cn.png" data-lang-src="<!--{en}img/en.png-->">
+  <img src="img/cn.png" data-lang-src="<!--{cn}img/cn.png--><!--{en}img/en.png-->">
+  <img src="img/cn.png" data-lang-src="none">
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  langs.update('en');
+  var img = document.querySelector('img');
+  console.log(img.getAttribute('src'));
+  // > img/en.png
+
+  langs.update('none');
+  var img = document.querySelector('img');
+  console.log(img.getAttribute('src'));
+  // > img/cn.png
+  ```
+ * @example Languages:update default
+  ```html
+  <span>中文1<!--{en}English1--></span>
+  <span>中文2<!--{en}English2--></span>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var span1 = document.querySelector('span:nth-of-type(1)');
+  langs.update('en', span1);
+
+  console.log(span1.innerHTML);
+  // > <!--{en}-->English1<!--/{en}--><!--{cn}中文1-->
+
+  var span2 = document.querySelector('span:nth-of-type(2)');
+  console.log(span2.innerHTML);
+  // > 中文2<!--{en}English2-->
+  ```
+ * @example Languages:update selector
+  ```html
+  <span>中文1<!--{en}English1--></span>
+  <span>中文2<!--{en}English2--></span>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var span1 = document.querySelector('span:nth-of-type(1)');
+  langs.update('en', 'span:nth-of-type(1)');
+
+  console.log(span1.innerHTML);
+  // > <!--{en}-->English1<!--/{en}--><!--{cn}中文1-->
+
+  var span2 = document.querySelector('span:nth-of-type(2)');
+  console.log(span2.innerHTML);
+  // > 中文2<!--{en}English2-->
+  ```
+ */
+class Languages {
 
   /**
    * 默认语言
@@ -42,16 +128,8 @@ class Languages {
    *
    * @param lang 语言
    */
-  constructor(_defaultLang: string = 'en') {
+  constructor(_defaultLang: string = 'cn') {
     this._defaultLang = _defaultLang
-  }
-
-  set lang(value: string) {
-    if (this._lang === value) {
-      return
-    }
-    this._lang = value
-    this.update()
   }
 
   /**
@@ -101,21 +179,22 @@ class Languages {
   /**
    * 将语言表达式编译为文本
    *
-   * @param langExpression
+   * @param _lang 语言
+   * @param langExpression 语言表达式对象
    */
-  build(langExpression: LangExpression): string {
+  build(_lang: string, langExpression: LangExpression): string {
     let result = ''
 
     Object.keys(langExpression.optionsLang).forEach((lang) => {
       let text = langExpression.optionsLang[lang]
-      if (lang === this._lang) {
+      if (lang === _lang) {
         result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
       } else {
         result += `<!--{${lang}}${text}-->`
       }
 
     })
-    if (!langExpression.optionsLang[this._lang]) {
+    if (!langExpression.optionsLang[_lang]) {
       let lang = this._defaultLang
       let text = langExpression.optionsLang[this._defaultLang]
       result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
@@ -127,9 +206,11 @@ class Languages {
   /**
    * 更新语言
    *
-   * @param element 更新的节点，默认为全部
+   * @param lang 语言
+   * @param parent 更新的节点，默认为全部
    */
-  update(parent?: Element | string) {
+  update(_lang?: string, parent?: Element | string) {
+    _lang = _lang || this._defaultLang
     if (!parent) {
       parent = document.documentElement
     } else if (typeof parent === 'string') {
@@ -158,7 +239,7 @@ class Languages {
 
     processNodes.forEach((node, index) => {
       if (processTexts[index]) {
-        node.innerHTML = this.build(processTexts[index])
+        node.innerHTML = this.build(_lang, processTexts[index])
       }
     })
 
@@ -174,9 +255,9 @@ class Languages {
         if (!langExpression.optionsLang[this._defaultLang]) {
           langExpression.optionsLang[this._defaultLang] = element.getAttribute(attr)
         }
-        element.setAttribute(langAttr, this.build(langExpression))
+        element.setAttribute(langAttr, this.build(_lang, langExpression))
         element.setAttribute(attr,
-          langExpression.optionsLang[this._lang] ||
+          langExpression.optionsLang[_lang] ||
           langExpression.optionsLang[this._defaultLang]
         )
       });

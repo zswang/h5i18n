@@ -8,8 +8,9 @@ const typescript = require('gulp-typescript')
 const connect = require('gulp-connect')
 const jdists = require('gulp-jdists')
 const uglify = require('gulp-uglify')
-const rename = require("gulp-rename")
-const open = require("gulp-open")
+const rename = require('gulp-rename')
+const open = require('gulp-open')
+const examplejs = require('gulp-examplejs')
 
 const port = 20172
 
@@ -50,8 +51,26 @@ gulp.task('open', function () {
 })
 
 gulp.task('uglify', function () {
-  gulp.src('h5i18n')
+  gulp.src('h5i18n.js')
     .pipe(uglify())
+    .pipe(rename('h5i18n.min.js'))
+    .pipe(gulp.dest('./'))
+})
+
+gulp.task('example', function() {
+  return gulp.src([
+      'src/ts/*.ts'
+    ])
+    .pipe(examplejs({
+      header: `
+global.h5i18n = require('../h5i18n.js');
+      `,
+      globals: 'document,NodeFilter'
+    }))
+    .pipe(rename({
+      extname: '.js'
+    }))
+    .pipe(gulp.dest('test'))
 })
 
 gulp.task('dist', ['build', 'jdists', 'uglify'])
