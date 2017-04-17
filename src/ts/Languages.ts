@@ -151,6 +151,18 @@ let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder']
   console.log(JSON.stringify(div.innerHTML));
   // > "\n    <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>\n    empty<!--empty-->\n  "
   ```
+ * @example Languages:update not found
+  ```html
+  <span><!--{en}--></span>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var span = document.querySelector('span');
+  langs.update();
+
+  console.log(span.innerHTML);
+  // > <!--{en}-->
+  ```
  */
 class Languages {
 
@@ -269,7 +281,6 @@ class Languages {
         !(/^\{[\w-]+\}/.test(node.nodeValue))) {
         continue
       }
-      console.log('node.nodeValue: %j', node.nodeValue)
       processNodes.push(node.parentNode)
       processTexts.push(this.parse(node.parentNode.innerHTML))
     }

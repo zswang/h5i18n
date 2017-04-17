@@ -6,7 +6,7 @@
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.0.3
+ * @version 0.0.7
  * @date 2017-04-17
  * @license MIT
  */
@@ -108,6 +108,17 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder'];
   console.log(JSON.stringify(div.innerHTML));
   // > "\n    <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>\n    empty<!--empty-->\n  "
   ```
+ * @example Languages:update not found
+  ```html
+  <span><!--{en}--></span>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var span = document.querySelector('span');
+  langs.update();
+  console.log(span.innerHTML);
+  // > <span><!--{en}--></span>
+  ```
  */
 var Languages = (function () {
     /**
@@ -205,7 +216,6 @@ var Languages = (function () {
                 !(/^\{[\w-]+\}/.test(node.nodeValue))) {
                 continue;
             }
-            console.log('node.nodeValue: %j', node.nodeValue);
             processNodes.push(node.parentNode);
             processTexts.push(this.parse(node.parentNode.innerHTML));
         }
