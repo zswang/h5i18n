@@ -162,5 +162,35 @@ describe("src/ts/Languages.ts", function () {
   assert.equal(examplejs_printLines.join("\n"), "中文2<!--{en}English2-->"); examplejs_printLines = [];
   });
           
+  it("jsdom@Languages:update empty", function (done) {
+    jsdom.env("  <div>\n    <span>中文<!--{en}English--></span>\n    empty<!--empty-->\n  </div>", {
+        features: {
+          FetchExternalResources : ["script", "link"],
+          ProcessExternalResources: ["script"]
+        }
+      },
+      function (err, window) {
+        global.window = window;
+        ["document","NodeFilter"].forEach(
+          function (key) {
+            global[key] = window[key];
+          }
+        );
+        assert.equal(err, null);
+        done();
+      }
+    );
+  });
+          
+  it("Languages:update empty", function () {
+    examplejs_printLines = [];
+  var langs = new h5i18n.Languages('cn');
+  var div = document.querySelector('div');
+  langs.update('en');
+
+  examplejs_print(JSON.stringify(div.innerHTML));
+  assert.equal(examplejs_printLines.join("\n"), "\"\\n    <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>\\n    empty<!--empty-->\\n  \""); examplejs_printLines = [];
+  });
+          
 });
          

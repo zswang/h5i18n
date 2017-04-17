@@ -3,12 +3,11 @@
 /**
  * @file h5i18n
  * @url https://github.com/zswang/h5i18n.git
- * 
- A mobile page of internationalization development framework
+ * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.0.2
- * @date 2017-04-15
+ * @version 0.0.3
+ * @date 2017-04-17
  * @license MIT
  */
 /**
@@ -94,6 +93,20 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder'];
   var span2 = document.querySelector('span:nth-of-type(2)');
   console.log(span2.innerHTML);
   // > 中文2<!--{en}English2-->
+  ```
+ * @example Languages:update empty
+  ```html
+  <div>
+    <span>中文<!--{en}English--></span>
+    empty<!--empty-->
+  </div>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var div = document.querySelector('div');
+  langs.update('en');
+  console.log(JSON.stringify(div.innerHTML));
+  // > "\n    <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>\n    empty<!--empty-->\n  "
   ```
  */
 var Languages = (function () {
@@ -189,9 +202,10 @@ var Languages = (function () {
         while ((node = nodeIterator.nextNode())) {
             if (processNodes.indexOf(node.parentNode) >= 0 ||
                 /^(script|style|link)$/i.test(node.parentNode.nodeName) ||
-                /^\s*$/.test(node.nodeValue)) {
+                !(/^\{[\w-]+\}/.test(node.nodeValue))) {
                 continue;
             }
+            console.log('node.nodeValue: %j', node.nodeValue);
             processNodes.push(node.parentNode);
             processTexts.push(this.parse(node.parentNode.innerHTML));
         }

@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * @file <%- name %>
  <% if (typeof repository != 'undefined') { %>
  * @url <%- repository.url %>
- * <% } %>
- <%- description %>
+ <% } %>
+ * <%- description %>
  * @author
      <% (author instanceof Array ? author : [author]).forEach(function (item) { %>
  *   <%- item.name %> (<%- item.url %>)
@@ -117,6 +117,21 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder'];
   console.log(span2.innerHTML);
   // > 中文2<!--{en}English2-->
   ```
+ * @example Languages:update empty
+  ```html
+  <div>
+    <span>中文<!--{en}English--></span>
+    empty<!--empty-->
+  </div>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var div = document.querySelector('div');
+  langs.update('en');
+
+  console.log(JSON.stringify(div.innerHTML));
+  // > "\n    <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>\n    empty<!--empty-->\n  "
+  ```
  */
 var Languages = (function () {
     /**
@@ -211,9 +226,10 @@ var Languages = (function () {
         while ((node = nodeIterator.nextNode())) {
             if (processNodes.indexOf(node.parentNode) >= 0 ||
                 /^(script|style|link)$/i.test(node.parentNode.nodeName) ||
-                /^\s*$/.test(node.nodeValue)) {
+                !(/^\{[\w-]+\}/.test(node.nodeValue))) {
                 continue;
             }
+            console.log('node.nodeValue: %j', node.nodeValue);
             processNodes.push(node.parentNode);
             processTexts.push(this.parse(node.parentNode.innerHTML));
         }
