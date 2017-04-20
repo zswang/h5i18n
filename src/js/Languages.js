@@ -30,9 +30,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * 需要处理元素属性集合
  */
-var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder'];
+var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label'];
 /**
- * @example Languages:text default option
+ * @example Languages:base
   ```html
   <span>中文1<!--{en}English1--></span>
   <span>中文2<!--{en}English2--></span>
@@ -51,7 +51,7 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder'];
   console.log(span2.innerHTML);
   // > <!--{en}-->English2<!--/{en}--><!--{cn}中文2-->
 
-  langs.update(); // cn
+  langs.update('cn');
   console.log(span1.innerHTML);
   // > <!--{en}English1--><!--{cn}-->中文1<!--/{cn}-->
 
@@ -144,6 +144,31 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder'];
   console.log(span.innerHTML);
   // > <!--{en}-->
   ```
+ * @example Languages:live
+  ```html
+  <div></div>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var div = document.querySelector('div');
+  langs.update('en');
+  div.innerHTML = '<span>中文<!--{en}English--></span>';
+  langs.update();
+
+  console.log(div.innerHTML);
+  // > <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>
+  ```
+ * @example Languages:extended attribute
+  ```html
+  <div cname="中文" data-lang-cname="<!--{en}English-->"></div>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn', ['cname']);
+  var div = document.querySelector('div');
+  langs.update('en');
+  console.log(div.getAttribute('cname'));
+  // > English
+  ```
  */
 var Languages = (function () {
     /**
@@ -151,9 +176,11 @@ var Languages = (function () {
      *
      * @param lang 语言
      */
-    function Languages(_defaultLang) {
+    function Languages(_defaultLang, _attrs) {
         if (_defaultLang === void 0) { _defaultLang = 'cn'; }
         this._defaultLang = _defaultLang;
+        this._currentLang = _defaultLang;
+        this._attrs = _attrs || languages_attrs;
     }
     /**
      * 解析文本为语言表达式
@@ -223,7 +250,8 @@ var Languages = (function () {
      */
     Languages.prototype.update = function (_lang, parent) {
         var _this = this;
-        _lang = _lang || this._defaultLang;
+        _lang = _lang || this._currentLang;
+        this._currentLang = _lang;
         if (!parent) {
             parent = document.documentElement;
         }
@@ -249,7 +277,7 @@ var Languages = (function () {
                 node.innerHTML = _this.build(_lang, processTexts[index]);
             }
         });
-        languages_attrs.forEach(function (attr) {
+        this._attrs.forEach(function (attr) {
             var langAttr = "data-lang-" + attr;
             var elements = [].slice.call(parent.querySelectorAll("[" + langAttr + "]"));
             elements.forEach(function (element) {

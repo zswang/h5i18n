@@ -48,10 +48,10 @@ interface LangExpression {
 /**
  * 需要处理元素属性集合
  */
-let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder']
+let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label']
 
 /**
- * @example Languages:text default option
+ * @example Languages:base
   ```html
   <span>中文1<!--{en}English1--></span>
   <span>中文2<!--{en}English2--></span>
@@ -70,7 +70,7 @@ let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder']
   console.log(span2.innerHTML);
   // > <!--{en}-->English2<!--/{en}--><!--{cn}中文2-->
 
-  langs.update(); // cn
+  langs.update('cn');
   console.log(span1.innerHTML);
   // > <!--{en}English1--><!--{cn}-->中文1<!--/{cn}-->
 
@@ -163,6 +163,31 @@ let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder']
   console.log(span.innerHTML);
   // > <!--{en}-->
   ```
+ * @example Languages:live
+  ```html
+  <div></div>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var div = document.querySelector('div');
+  langs.update('en');
+  div.innerHTML = '<span>中文<!--{en}English--></span>';
+  langs.update();
+
+  console.log(div.innerHTML);
+  // > <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>
+  ```
+ * @example Languages:extended attribute
+  ```html
+  <div cname="中文" data-lang-cname="<!--{en}English-->"></div>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn', ['cname']);
+  var div = document.querySelector('div');
+  langs.update('en');
+  console.log(div.getAttribute('cname'));
+  // > English
+  ```
  */
 class Languages {
 
@@ -172,12 +197,25 @@ class Languages {
   _defaultLang: string
 
   /**
+   * 当前语言
+   */
+  _currentLang: string
+
+  /**
+   * 语言相关属性
+   */
+  _attrs: string[]
+
+  /**
    * 构造多语言工具
    *
    * @param lang 语言
    */
-  constructor(_defaultLang: string = 'cn') {
+  constructor(_defaultLang = 'cn', _attrs: string[]) {
     this._defaultLang = _defaultLang
+    this._currentLang = _defaultLang
+
+    this._attrs = _attrs || languages_attrs;
   }
 
   /**
@@ -258,7 +296,9 @@ class Languages {
    * @param parent 更新的节点，默认为全部
    */
   update(_lang?: string, parent?: Element | string) {
-    _lang = _lang || this._defaultLang
+    _lang = _lang || this._currentLang
+    this._currentLang = _lang
+
     if (!parent) {
       parent = document.documentElement
     } else if (typeof parent === 'string') {
@@ -291,7 +331,7 @@ class Languages {
       }
     })
 
-    languages_attrs.forEach((attr) => {
+    this._attrs.forEach((attr) => {
       let langAttr = `data-lang-${attr}`
       let elements = [].slice.call((parent as Element).querySelectorAll(`[${langAttr}]`))
       elements.forEach((element) => {
