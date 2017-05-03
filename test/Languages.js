@@ -283,5 +283,33 @@ describe("src/ts/Languages.ts", function () {
   assert.equal(examplejs_printLines.join("\n"), "English"); examplejs_printLines = [];
   });
           
+  it("i18n():base", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    langs.i18n({
+      'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+      'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
+    });
+
+    examplejs_print(langs.get('<!--{*}click-->'));
+    assert.equal(examplejs_printLines.join("\n"), "点击"); examplejs_printLines = [];
+
+    examplejs_print(langs.get('<!--{*}dblclick-->', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "ダブルクリック"); examplejs_printLines = [];
+
+    examplejs_print(langs.get('<!--{*}dblclick-->', 'none'));
+    assert.equal(examplejs_printLines.join("\n"), "双击"); examplejs_printLines = [];
+
+    examplejs_print(langs.get('默认双击<!--{*}dblclick-->', 'none'));
+    assert.equal(examplejs_printLines.join("\n"), "默认双击"); examplejs_printLines = [];
+
+    langs.i18n();
+    examplejs_print(langs.get('空<!--{*}none-->'));
+    assert.equal(examplejs_printLines.join("\n"), "空"); examplejs_printLines = [];
+
+    examplejs_print(langs.get('无设置'));
+    assert.equal(examplejs_printLines.join("\n"), "无设置"); examplejs_printLines = [];
+  });
+          
 });
          

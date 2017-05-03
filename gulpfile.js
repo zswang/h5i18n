@@ -22,11 +22,11 @@ gulp.task('connect', function () {
 })
 
 gulp.task('watch', function () {
-  gulp.watch(['./debug/*.html', './src/ts/*.ts'], ['build', 'jdists', 'reload'])
+  gulp.watch(['./example/*.html', './src/ts/*.ts'], ['build', 'jdists', 'reload'])
 })
 
 gulp.task('reload', function () {
-  gulp.src(['./debug/*.html', './src/ts/*.ts'])
+  gulp.src(['./example/*.html', './src/ts/*.ts'])
     .pipe(connect.reload())
 })
 

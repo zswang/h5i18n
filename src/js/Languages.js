@@ -181,7 +181,49 @@ var Languages = (function () {
         this._defaultLang = _defaultLang;
         this._currentLang = _defaultLang;
         this._attrs = _attrs || languages_attrs;
+        this._i18ns = {};
     }
+    /**
+     * 增加语言字典
+     *
+     * @param blos 语言字典
+     * @example i18n():base
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      langs.i18n({
+        'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+        'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
+      });
+  
+      console.log(langs.get('<!--{*}click-->'));
+      // > 点击
+  
+      console.log(langs.get('<!--{*}dblclick-->', 'jp'));
+      // > ダブルクリック
+  
+      console.log(langs.get('<!--{*}dblclick-->', 'none'));
+      // > 双击
+  
+      console.log(langs.get('默认双击<!--{*}dblclick-->', 'none'));
+      // > 默认双击
+  
+      langs.i18n();
+      console.log(langs.get('空<!--{*}none-->'));
+      // > 空
+  
+      console.log(langs.get('无设置'));
+      // > 无设置
+      ```
+     */
+    Languages.prototype.i18n = function (blos) {
+        var _this = this;
+        if (!blos) {
+            return;
+        }
+        Object.keys(blos).forEach(function (key) {
+            _this._i18ns[key] = blos[key];
+        });
+    };
     /**
      * 解析文本为语言表达式
      *
@@ -194,7 +236,7 @@ var Languages = (function () {
             currentText: null,
         };
         var find;
-        text = String(text).replace(/<!--\{([\w-]+)\}-->([^]+?)<!--\/\{\1\}-->|<!--\{([\w-]+)\}([^]+?)-->/g, function (all, currentLang, currentText, optionLang, optionText) {
+        text = String(text).replace(/<!--\{([\w-]+)\}-->([^]+?)<!--\/\{\1\}-->|<!--\{([\w-]+|\*)\}([^]+?)-->/g, function (all, currentLang, currentText, optionLang, optionText) {
             find = true;
             if (currentLang) {
                 result.currentLang = currentLang;
@@ -208,6 +250,16 @@ var Languages = (function () {
         });
         if (!find) {
             return null;
+        }
+        if (result.optionsLang['*']) {
+            var t = this.parse(this._i18ns[result.optionsLang['*']]);
+            if (t) {
+                Object.keys(t.optionsLang).forEach(function (key) {
+                    result.optionsLang[key] = t.optionsLang[key];
+                });
+                result.currentLang = result.currentLang || t.currentLang;
+                result.currentText = result.currentText || t.currentText;
+            }
         }
         text = text.trim();
         if (text) {
@@ -294,6 +346,16 @@ var Languages = (function () {
                     langExpression.optionsLang[_this._defaultLang]);
             });
         });
+    };
+    Languages.prototype.get = function (langText, lang) {
+        lang = lang || this._currentLang;
+        var langExpression = this.parse(langText);
+        if (!langExpression) {
+            return langText;
+        }
+        return langExpression.optionsLang[lang] ||
+            langExpression.defaultText ||
+            langExpression.optionsLang[this._defaultLang];
     };
     return Languages;
 }()); /*</function>*/

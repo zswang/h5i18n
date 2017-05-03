@@ -1,6 +1,6 @@
 {
   "name": "h5i18n",
-  "version": "0.0.19",
+  "version": "0.1.1",
   "homepage": "https://github.com/zswang/h5i18n",
   "description": "A mobile page of internationalization development framework",
   "main": "h5i18n.js",
