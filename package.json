@@ -1,6 +1,6 @@
 {
   "name": "h5i18n",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A mobile page of internationalization development framework",
   "repository": {
     "type": "git",
@@ -15,6 +15,9 @@
     "test": "istanbul cover --hook-run-in-context node_modules/mocha/bin/_mocha -- -R spec",
     "lint": "jshint h5i18n.js"
   },
+  "bin": {
+    "h5i18n": "cli.js"
+  },
   "keywords": [
     "i18n"
   ],
@@ -28,6 +31,11 @@
     "url": "http://weibo.com/zswang"
   },
   "main": "h5i18n.js",
+  "dependencies": {
+    "colors": "^1.0.3",
+    "mkdirp": "^0.5.0",
+    "commander": "^2.9.0"
+  },
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-connect": "^5.0.0",
@@ -47,6 +55,7 @@
   "files": [
     "README.md",
     "h5i18n.js",
-    "h5i18n.min.js"
+    "h5i18n.min.js",
+    "lib"
   ]
 }

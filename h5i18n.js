@@ -6,8 +6,8 @@
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.1.1
- * @date 2017-05-03
+ * @version 0.1.2
+ * @date 2017-05-05
  * @license MIT
  */
 /**

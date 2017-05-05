@@ -357,6 +357,10 @@ class Languages {
     _lang = _lang || this._currentLang
     this._currentLang = _lang
 
+    if (typeof document === 'undefined') {
+      return;
+    }
+
     if (!parent) {
       parent = document.documentElement
     } else if (typeof parent === 'string') {

@@ -304,6 +304,9 @@ var Languages = (function () {
         var _this = this;
         _lang = _lang || this._currentLang;
         this._currentLang = _lang;
+        if (typeof document === 'undefined') {
+            return;
+        }
         if (!parent) {
             parent = document.documentElement;
         }
