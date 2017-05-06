@@ -13,6 +13,7 @@ program
   .version(packageInfo.version)
   .usage('[options] <file ...>')
   .option('-o, --output <file>', 'output file')
+  .option('-d, --defaultLang <default language>', 'set default language.')
   .option('-l, --lang <language>', 'set current language.')
   .option('-v, --version', 'output version number and exit')
   .option('-m, --map <i18n file>', 'map of languages file.')
@@ -26,7 +27,8 @@ program.args.forEach(function (filename) {
   if (fs.existsSync(program.map)) {
     i18n = JSON.parse(fs.readFileSync(program.map));
   }
-  contents.push(compiler.replace(fs.readFileSync(filename), {
+  contents.push(compiler.Compiler.replace(fs.readFileSync(filename), {
+    defaultLang: program.defaultLang,
     lang: program.lang,
     map: i18n,
   }));

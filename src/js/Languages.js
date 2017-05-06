@@ -64,6 +64,11 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label'];
 
   console.log(span2.innerHTML);
   // > <!--{en}English2--><!--{cn}中文2--><!--{cn}-->中文2<!--/{cn}-->
+
+  var global_document = global.document;
+  delete global.document;
+  langs.update('en');
+  global.document = global_document;
   ```
  * @example Languages:attr
   ```html

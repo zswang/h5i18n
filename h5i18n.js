@@ -6,8 +6,8 @@
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.1.2
- * @date 2017-05-05
+ * @version 0.1.43
+ * @date 2017-05-06
  * @license MIT
  */
 /**
@@ -46,6 +46,10 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label'];
   // > <!--{en}English1--><!--{cn}中文1--><!--{cn}-->中文1<!--/{cn}-->
   console.log(span2.innerHTML);
   // > <!--{en}English2--><!--{cn}中文2--><!--{cn}-->中文2<!--/{cn}-->
+  var global_document = global.document;
+  delete global.document;
+  langs.update('en');
+  global.document = global_document;
   ```
  * @example Languages:attr
   ```html
@@ -272,6 +276,9 @@ var Languages = (function () {
         var _this = this;
         _lang = _lang || this._currentLang;
         this._currentLang = _lang;
+        if (typeof document === 'undefined') {
+            return;
+        }
         if (!parent) {
             parent = document.documentElement;
         }

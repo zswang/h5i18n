@@ -1,4 +1,5 @@
 
+global.compiler = require('../lib/compiler.js');
 global.h5i18n = require('../h5i18n.js');
       
 
@@ -58,6 +59,11 @@ describe("src/ts/Languages.ts", function () {
 
   examplejs_print(span2.innerHTML);
   assert.equal(examplejs_printLines.join("\n"), "<!--{en}English2--><!--{cn}中文2--><!--{cn}-->中文2<!--/{cn}-->"); examplejs_printLines = [];
+
+  var global_document = global.document;
+  delete global.document;
+  langs.update('en');
+  global.document = global_document;
   });
           
   it("jsdom@Languages:attr", function (done) {

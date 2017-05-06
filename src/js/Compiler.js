@@ -1,4 +1,6 @@
-var Languages_1 = require('../');
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var Languages_1 = require("./Languages");
 /*<function name="Compiler">*/
 var Compiler = (function () {
     function Compiler() {
@@ -14,10 +16,12 @@ var Compiler = (function () {
         lang: 'en'
       }));
       // > 'click'
+  
       console.log(compiler.Compiler.replace("language.get(`点击<!--{en}click-->`)", {
         lang: 'en'
       }));
       // > `click`
+  
       console.log(compiler.Compiler.replace("language.get(\"点击<!--{en}click-->\")", {
         lang: 'en'
       }));
@@ -29,6 +33,7 @@ var Compiler = (function () {
         lang: 'jp'
       }));
       // > <img src="jp.png">
+  
       console.log(compiler.Compiler.replace('<img src="cn.png"title="标志"data-lang-title="<!--{jp}標識--><!--{en}logo-->"data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', {
         lang: 'jp'
       }));
@@ -40,6 +45,7 @@ var Compiler = (function () {
         lang: 'jp'
       }));
       // > <span>日本語</span>
+  
       console.log(compiler.Compiler.replace('<div title="中文" data-lang-title="<!--{jp}日本語--><!--{en}English-->"><div>中文<!--{en}English--><!--{jp}日本語--></div></div>', {
         lang: 'jp'
       }));
@@ -61,10 +67,13 @@ var Compiler = (function () {
         lang: 'jp',
       }));
       // > <span sa-data-lang-title="中文">
+  
       console.log(compiler.Compiler.replace('中文<!--{en}English--><!--{jp}日本語--></span>', {
         lang: 'jp',
       }));
       // > 中文<!--{en}English--><!--{jp}日本語--></span>
+  
+      compiler.Compiler();
       ```
      */
     Compiler.replace = function (code, options) {

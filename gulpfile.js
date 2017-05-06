@@ -43,6 +43,11 @@ gulp.task('jdists', function () {
     .pipe(jdists())
     .pipe(rename('h5i18n.js'))
     .pipe(gulp.dest('./'))
+
+  gulp.src('./src/compiler.jdists.js')
+    .pipe(jdists())
+    .pipe(rename('compiler.js'))
+    .pipe(gulp.dest('./lib/'))
 })
 
 gulp.task('open', function () {
@@ -63,6 +68,7 @@ gulp.task('example', function() {
     ])
     .pipe(examplejs({
       header: `
+global.compiler = require('../lib/compiler.js');
 global.h5i18n = require('../h5i18n.js');
       `,
       globals: 'document,NodeFilter'
