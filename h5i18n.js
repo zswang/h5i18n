@@ -1,4 +1,129 @@
 (function (exportName) {
+  /*<function name="createEmitter">*/
+/**
+ * @file h5emitter
+ * @url https://github.com/zswang/h5emitter.git
+ * event emitter function
+ * @author
+ *   zswang (http://weibo.com/zswang)
+ * @version 0.0.11
+ * @date 2017-05-08
+ * @license MIT
+ */
+/**
+ * 创建事件对象
+ '''<example>'''
+ * @example base
+  ```js
+  var emitter = h5emitter.createEmitter();
+  emitter.on('click', function (data) {
+    console.log('on', data);
+  });
+  emitter.once('click', function (data) {
+    console.log('once', data);
+  });
+  function bee(data) {
+    console.log('bee', data);
+  }
+  emitter.on('click', bee);
+  emitter.on('click2', function (data) {
+    console.log('on', data);
+  });
+  emitter.emit('click2', 'hello 1');
+  // > on hello 1
+  emitter.emit('click', 'hello 1');
+  // > on hello 1
+  // > once hello 1
+  // > bee hello 1
+  emitter.emit('click', 'hello 2');
+  // > on hello 2
+  // > bee hello 2
+  emitter.off('click', bee);
+  emitter.emit('click', 'hello 3');
+  // > on hello 3
+  ```
+ '''</example>'''
+ */
+function createEmitter() {
+    /**
+     * 事件对象实例
+     *
+     * @type {Object}
+     */
+    var instance;
+    /**
+     * 事件列表
+     */
+    var callbacks = [];
+    /**
+     * 事件绑定
+     *
+     * @param event 事件名
+     * @param fn 回调函数
+     * @return 返回事件实例
+     */
+    function on(event, fn) {
+        callbacks.push({
+            event: event,
+            fn: fn,
+        });
+        return instance;
+    }
+    /**
+     * 取消事件绑定
+     *
+     * @param event 事件名
+     * @param fn 回调函数
+     * @return返回事件实例
+     */
+    function off(event, fn) {
+        callbacks = callbacks.filter(function (item) {
+            return !(item.event === event && item.fn === fn);
+        });
+        return instance;
+    }
+    /**
+     * 事件绑定，只触发一次
+     *
+     * @param event 事件名
+     * @param fn 回调函数
+     * @return 返回事件实例
+     */
+    function once(event, fn) {
+        function handler() {
+            off(event, handler);
+            fn.apply(instance, arguments);
+        }
+        on(event, handler);
+        return instance;
+    }
+    /**
+     * 触发事件
+     *
+     * @param event 事件名
+     * @param fn 回调函数
+     * @return 返回事件实例
+     */
+    function emit(event) {
+        var argv = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            argv[_i - 1] = arguments[_i];
+        }
+        callbacks.filter(function (item) {
+            return item.event === event;
+        }).forEach(function (item) {
+            item.fn.apply(instance, argv);
+        });
+        return instance;
+    }
+    instance = {
+        emit: emit,
+        on: on,
+        off: off,
+        once: once,
+    };
+    return instance;
+} /*</function>*/
   /*<function name="Languages">*/
 /**
  * @file h5i18n
@@ -6,8 +131,8 @@
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.1.43
- * @date 2017-05-06
+ * @version 0.2.1
+ * @date 2017-05-08
  * @license MIT
  */
 /**
@@ -147,6 +272,27 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label'];
   console.log(div.getAttribute('cname'));
   // > English
   ```
+ * @example Languages:event
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var logs = '';
+  function fn(lang) {
+    logs += 'on(' + lang + ')';
+  }
+  langs.on('change', fn);
+  langs.once('change', function (lang) {
+    logs += 'once(' + lang + ')';
+  });
+  langs.update('en');
+  langs.update('jp');
+  langs.update('jp');
+  console.log(logs);
+  // > on(en)once(en)on(jp)
+  langs.off('change', fn);
+  langs.update('en');
+  console.log(logs);
+  // > on(en)once(en)on(jp)
+  ```
  */
 var Languages = (function () {
     /**
@@ -160,6 +306,7 @@ var Languages = (function () {
         this._currentLang = _defaultLang;
         this._attrs = _attrs || languages_attrs;
         this._i18ns = {};
+        this._emitter = createEmitter();
     }
     /**
      * 增加语言字典
@@ -195,6 +342,18 @@ var Languages = (function () {
         Object.keys(blos).forEach(function (key) {
             _this._i18ns[key] = blos[key];
         });
+    };
+    Languages.prototype.on = function (event, fn) {
+        this._emitter.on(event, fn);
+        return this;
+    };
+    Languages.prototype.once = function (event, fn) {
+        this._emitter.once(event, fn);
+        return this;
+    };
+    Languages.prototype.off = function (event, fn) {
+        this._emitter.off(event, fn);
+        return this;
     };
     /**
      * 解析文本为语言表达式
@@ -275,7 +434,10 @@ var Languages = (function () {
     Languages.prototype.update = function (_lang, parent) {
         var _this = this;
         _lang = _lang || this._currentLang;
-        this._currentLang = _lang;
+        if (this._currentLang !== _lang) {
+            this._currentLang = _lang;
+            this._emitter.emit('change', _lang);
+        }
         if (typeof document === 'undefined') {
             return;
         }

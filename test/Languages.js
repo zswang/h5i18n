@@ -289,6 +289,29 @@ describe("src/ts/Languages.ts", function () {
   assert.equal(examplejs_printLines.join("\n"), "English"); examplejs_printLines = [];
   });
           
+  it("Languages:event", function () {
+    examplejs_printLines = [];
+  var langs = new h5i18n.Languages('cn');
+  var logs = '';
+  function fn(lang) {
+    logs += 'on(' + lang + ')';
+  }
+  langs.on('change', fn);
+  langs.once('change', function (lang) {
+    logs += 'once(' + lang + ')';
+  });
+  langs.update('en');
+  langs.update('jp');
+  langs.update('jp');
+  examplejs_print(logs);
+  assert.equal(examplejs_printLines.join("\n"), "on(en)once(en)on(jp)"); examplejs_printLines = [];
+
+  langs.off('change', fn);
+  langs.update('en');
+  examplejs_print(logs);
+  assert.equal(examplejs_printLines.join("\n"), "on(en)once(en)on(jp)"); examplejs_printLines = [];
+  });
+          
   it("i18n():base", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');

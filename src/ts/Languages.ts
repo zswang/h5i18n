@@ -18,6 +18,8 @@ interface LangExpression {
   defaultText?: string
 }
 
+import { Emitter, createEmitter } from 'h5emitter/src/ts/Emitter';
+
 /*<function name="Languages">*/
 /*<jdists encoding="ejs" data="../../package.json">*/
 /**
@@ -193,6 +195,28 @@ let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label']
   console.log(div.getAttribute('cname'));
   // > English
   ```
+ * @example Languages:event
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var logs = '';
+  function fn(lang) {
+    logs += 'on(' + lang + ')';
+  }
+  langs.on('change', fn);
+  langs.once('change', function (lang) {
+    logs += 'once(' + lang + ')';
+  });
+  langs.update('en');
+  langs.update('jp');
+  langs.update('jp');
+  console.log(logs);
+  // > on(en)once(en)on(jp)
+
+  langs.off('change', fn);
+  langs.update('en');
+  console.log(logs);
+  // > on(en)once(en)on(jp)
+  ```
  */
 class Languages {
 
@@ -215,6 +239,8 @@ class Languages {
    * 语言字典
    */
   _i18ns: { [key: string]: string }
+
+  _emitter: Emitter;
 
   /**
    * 增加语言字典
@@ -268,6 +294,22 @@ class Languages {
 
     this._attrs = _attrs || languages_attrs;
     this._i18ns = {}
+    this._emitter = createEmitter()
+  }
+
+  on(event: string, fn: Function) {
+    this._emitter.on(event, fn)
+    return this
+  }
+
+  once(event: string, fn: Function) {
+    this._emitter.once(event, fn)
+    return this
+  }
+
+  off(event: string, fn: Function) {
+    this._emitter.off(event, fn)
+    return this
   }
 
   /**
@@ -360,7 +402,11 @@ class Languages {
    */
   update(_lang?: string, parent?: Element | string) {
     _lang = _lang || this._currentLang
-    this._currentLang = _lang
+
+    if (this._currentLang !== _lang) {
+      this._currentLang = _lang
+      this._emitter.emit('change', _lang)
+    }
 
     if (typeof document === 'undefined') {
       return;

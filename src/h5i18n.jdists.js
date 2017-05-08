@@ -1,5 +1,7 @@
 (function (exportName) {
-  /*<jdists encoding="fndep" import="./js/Languages.js" depend="Languages" />*/
+  /*<jdists import="../node_modules/h5emitter/h5emitter.js" encoding="fndep" depend="createEmitter" />*/
+  /*<jdists encoding="fndep,regex" import="./js/Languages.js"
+    depend="Languages" pattern="/Emitter_\d+\./g" replacement="" />*/
 
   var exports = {
       Languages: Languages
@@ -17,5 +19,5 @@
   } else {
     window[exportName] = exports;
   }
-  
+
 })('h5i18n');

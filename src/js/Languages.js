@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var Emitter_1 = require("h5emitter/src/ts/Emitter");
 /*<function name="Languages">*/
 /*<jdists encoding="ejs" data="../../package.json">*/
 /**
@@ -174,6 +175,28 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label'];
   console.log(div.getAttribute('cname'));
   // > English
   ```
+ * @example Languages:event
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  var logs = '';
+  function fn(lang) {
+    logs += 'on(' + lang + ')';
+  }
+  langs.on('change', fn);
+  langs.once('change', function (lang) {
+    logs += 'once(' + lang + ')';
+  });
+  langs.update('en');
+  langs.update('jp');
+  langs.update('jp');
+  console.log(logs);
+  // > on(en)once(en)on(jp)
+
+  langs.off('change', fn);
+  langs.update('en');
+  console.log(logs);
+  // > on(en)once(en)on(jp)
+  ```
  */
 var Languages = (function () {
     /**
@@ -187,6 +210,7 @@ var Languages = (function () {
         this._currentLang = _defaultLang;
         this._attrs = _attrs || languages_attrs;
         this._i18ns = {};
+        this._emitter = Emitter_1.createEmitter();
     }
     /**
      * 增加语言字典
@@ -228,6 +252,18 @@ var Languages = (function () {
         Object.keys(blos).forEach(function (key) {
             _this._i18ns[key] = blos[key];
         });
+    };
+    Languages.prototype.on = function (event, fn) {
+        this._emitter.on(event, fn);
+        return this;
+    };
+    Languages.prototype.once = function (event, fn) {
+        this._emitter.once(event, fn);
+        return this;
+    };
+    Languages.prototype.off = function (event, fn) {
+        this._emitter.off(event, fn);
+        return this;
     };
     /**
      * 解析文本为语言表达式
@@ -308,7 +344,10 @@ var Languages = (function () {
     Languages.prototype.update = function (_lang, parent) {
         var _this = this;
         _lang = _lang || this._currentLang;
-        this._currentLang = _lang;
+        if (this._currentLang !== _lang) {
+            this._currentLang = _lang;
+            this._emitter.emit('change', _lang);
+        }
         if (typeof document === 'undefined') {
             return;
         }
