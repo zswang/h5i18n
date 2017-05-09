@@ -131,8 +131,8 @@ function createEmitter() {
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.2.1
- * @date 2017-05-08
+ * @version 0.2.2
+ * @date 2017-05-09
  * @license MIT
  */
 /**
