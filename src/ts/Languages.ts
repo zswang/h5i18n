@@ -18,7 +18,7 @@ interface LangExpression {
   defaultText?: string
 }
 
-import { Emitter, createEmitter } from 'h5emitter/src/ts/Emitter';
+import { Emitter, createEmitter } from 'h5emitter/src/ts/Emitter'
 
 /*<function name="Languages">*/
 /*<jdists encoding="ejs" data="../../package.json">*/
@@ -168,7 +168,7 @@ let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label']
   langs.update();
 
   console.log(span.innerHTML);
-  // > <!--{en}-->
+  // > <!--{en}--><!--{cn}--><!--/{cn}-->
   ```
  * @example Languages:live
   ```html
@@ -216,6 +216,12 @@ let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label']
   langs.update('en');
   console.log(logs);
   // > on(en)once(en)on(jp)
+  ```
+ * @example Languages:empty
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  console.log(3 + langs.get('个<!--{en}-->', 'en'));
+  // > 3
   ```
  */
 class Languages {
@@ -327,7 +333,7 @@ class Languages {
     let find
 
     text = String(text).replace(
-      /<!--\{([\w-]+)\}-->([^]+?)<!--\/\{\1\}-->|<!--\{([\w-]+|\*)\}([^]+?)-->/g,
+      /<!--\{([\w-]+)\}-->([^]*?)<!--\/\{\1\}-->|<!--\{([\w-]+|\*)\}([^]*?)-->/g,
       (all, currentLang, currentText, optionLang, optionText) => {
         find = true
         if (currentLang) {
@@ -387,7 +393,7 @@ class Languages {
     })
     if (!langExpression.optionsLang[_lang]) {
       let lang = this._defaultLang
-      let text = langExpression.optionsLang[this._defaultLang]
+      let text = langExpression.optionsLang[this._defaultLang] || ''
       result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
     }
 
@@ -408,8 +414,9 @@ class Languages {
       this._emitter.emit('change', _lang)
     }
 
+    // run in node
     if (typeof document === 'undefined') {
-      return;
+      return
     }
 
     if (!parent) {
@@ -439,9 +446,7 @@ class Languages {
     }
 
     processNodes.forEach((node, index) => {
-      if (processTexts[index]) {
-        node.innerHTML = this.build(_lang, processTexts[index])
-      }
+      node.innerHTML = this.build(_lang, processTexts[index])
     })
 
     this._attrs.forEach((attr) => {
@@ -461,7 +466,7 @@ class Languages {
           langExpression.optionsLang[_lang] ||
           langExpression.optionsLang[this._defaultLang]
         )
-      });
+      })
     })
 
   }
@@ -473,9 +478,13 @@ class Languages {
     if (!langExpression) {
       return langText
     }
-    return langExpression.optionsLang[lang] ||
-      langExpression.defaultText ||
-      langExpression.optionsLang[this._defaultLang]
+    if (langExpression.optionsLang[lang] !== undefined) {
+      return langExpression.optionsLang[lang]
+    }
+    if (langExpression.defaultText !== undefined) {
+      return langExpression.defaultText
+    }
+    return langExpression.optionsLang[this._defaultLang]
   }
 
 } /*</function>*/

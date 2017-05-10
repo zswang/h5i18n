@@ -225,7 +225,7 @@ describe("src/ts/Languages.ts", function () {
   langs.update();
 
   examplejs_print(span.innerHTML);
-  assert.equal(examplejs_printLines.join("\n"), "<!--{en}-->"); examplejs_printLines = [];
+  assert.equal(examplejs_printLines.join("\n"), "<!--{en}--><!--{cn}--><!--/{cn}-->"); examplejs_printLines = [];
   });
           
   it("jsdom@Languages:live", function (done) {
@@ -310,6 +310,13 @@ describe("src/ts/Languages.ts", function () {
   langs.update('en');
   examplejs_print(logs);
   assert.equal(examplejs_printLines.join("\n"), "on(en)once(en)on(jp)"); examplejs_printLines = [];
+  });
+          
+  it("Languages:empty", function () {
+    examplejs_printLines = [];
+  var langs = new h5i18n.Languages('cn');
+  examplejs_print(3 + langs.get('个<!--{en}-->', 'en'));
+  assert.equal(examplejs_printLines.join("\n"), "3"); examplejs_printLines = [];
   });
           
   it("i18n():base", function () {

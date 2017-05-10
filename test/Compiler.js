@@ -83,5 +83,13 @@ describe("src/ts/Compiler.ts", function () {
     compiler.Compiler();
   });
           
+  it("Compiler.replace(): case1", function () {
+    examplejs_printLines = [];
+    examplejs_print(compiler.Compiler.replace('console.info(languages.get("中文<!--{en}English-->"))', {
+      lang: 'en',
+    }));
+    assert.equal(examplejs_printLines.join("\n"), "console.info(\"English\")"); examplejs_printLines = [];
+  });
+          
 });
          

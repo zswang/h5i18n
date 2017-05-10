@@ -75,6 +75,13 @@ var Compiler = (function () {
   
       compiler.Compiler();
       ```
+     * @example Compiler.replace(): case1
+      ```js
+      console.log(compiler.Compiler.replace('console.info(languages.get("中文<!--{en}English-->"))', {
+        lang: 'en',
+      }));
+      // > console.info("English")
+      ```
      */
     Compiler.replace = function (code, options) {
         var languages = new Languages_1.Languages(options.defaultLang || 'cn', []);

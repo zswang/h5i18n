@@ -78,6 +78,13 @@ class Compiler {
 
     compiler.Compiler();
     ```
+   * @example Compiler.replace(): case1
+    ```js
+    console.log(compiler.Compiler.replace('console.info(languages.get("中文<!--{en}English-->"))', {
+      lang: 'en',
+    }));
+    // > console.info("English")
+    ```
    */
   static replace(code: string, options: CompilerOptions) {
     let languages = new Languages(options.defaultLang || 'cn', [])
