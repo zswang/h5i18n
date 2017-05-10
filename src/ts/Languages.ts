@@ -278,6 +278,24 @@ class Languages {
 
     console.log(langs.get('无设置'));
     // > 无设置
+
+    ```
+   * @example i18n():default key
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    langs.i18n({
+      'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+      'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
+    });
+
+    console.log(langs.get('click<!--{*}-->'));
+    // > 点击
+
+    console.log(langs.get('click<!--{*}-->', 'jp'));
+    // > クリックします
+
+    console.log(langs.get('none<!--{*}-->'));
+    // > none
     ```
    */
   i18n(blos: { [key: string]: string }) {
@@ -351,22 +369,27 @@ class Languages {
       return null
     }
 
-    if (result.optionsLang['*']) {
-      var t = this.parse(this._i18ns[result.optionsLang['*']])
+    text = text.trim()
+    if (text) {
+      result.defaultText = text
+      if (!result.optionsLang[this._defaultLang]) {
+        result.optionsLang[this._defaultLang] = text
+      }
+    }
+
+    if (result.optionsLang['*'] !== undefined) {
+      let t;
+      if (result.optionsLang['*'] === '') {
+        t = this.parse(this._i18ns[text])
+      } else {
+        t = this.parse(this._i18ns[result.optionsLang['*']])
+      }
       if (t) {
         Object.keys(t.optionsLang).forEach((key) => {
           result.optionsLang[key] = t.optionsLang[key]
         })
         result.currentLang = result.currentLang || t.currentLang
         result.currentText = result.currentText || t.currentText
-      }
-    }
-
-    text = text.trim()
-    if (text) {
-      result.defaultText = text
-      if (!result.optionsLang[this._defaultLang]) {
-        result.optionsLang[this._defaultLang] = text
       }
     }
 

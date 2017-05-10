@@ -347,5 +347,23 @@ describe("src/ts/Languages.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "无设置"); examplejs_printLines = [];
   });
           
+  it("i18n():default key", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    langs.i18n({
+      'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+      'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
+    });
+
+    examplejs_print(langs.get('click<!--{*}-->'));
+    assert.equal(examplejs_printLines.join("\n"), "点击"); examplejs_printLines = [];
+
+    examplejs_print(langs.get('click<!--{*}-->', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "クリックします"); examplejs_printLines = [];
+
+    examplejs_print(langs.get('none<!--{*}-->'));
+    assert.equal(examplejs_printLines.join("\n"), "none"); examplejs_printLines = [];
+  });
+          
 });
          
