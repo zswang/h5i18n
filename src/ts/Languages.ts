@@ -494,6 +494,12 @@ class Languages {
 
   }
 
+  /**
+   * 获取表达式中的文字
+   *
+   * @param langText 表达式
+   * @param lang 语言，默认为当前语言
+   */
   get(langText: string, lang?: string) {
     lang = lang || this._currentLang
 
@@ -508,6 +514,48 @@ class Languages {
       return langExpression.defaultText
     }
     return langExpression.optionsLang[this._defaultLang]
+  }
+
+  /**
+   * 获取当前语言
+   * @example Languages:get currentLang()
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    console.log(langs.currentLang);
+    // > cn
+
+    langs.update('en');
+    console.log(langs.currentLang);
+    // > en
+    ```
+   */
+  get currentLang() {
+    return this._currentLang
+  }
+
+  /**
+   * 获取当前语言
+   * @example Languages:set currentLang()
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var count = 0;
+    langs.on('change', function () {
+      count++;
+    });
+    langs.currentLang = 'en';
+    console.log(count);
+    // > 1
+
+    langs.currentLang = 'en';
+    console.log(count);
+    // > 1
+    ```
+   */
+  set currentLang(value: string) {
+    if (this._currentLang === value) {
+      return
+    }
+    this.update(value)
   }
 
 } /*</function>*/

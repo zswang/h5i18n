@@ -423,6 +423,12 @@ var Languages = (function () {
             });
         });
     };
+    /**
+     * 获取表达式中的文字
+     *
+     * @param langText 表达式
+     * @param lang 语言，默认为当前语言
+     */
     Languages.prototype.get = function (langText, lang) {
         lang = lang || this._currentLang;
         var langExpression = this.parse(langText);
@@ -437,6 +443,50 @@ var Languages = (function () {
         }
         return langExpression.optionsLang[this._defaultLang];
     };
+    Object.defineProperty(Languages.prototype, "currentLang", {
+        /**
+         * 获取当前语言
+         * @example Languages:get currentLang()
+          ```js
+          var langs = new h5i18n.Languages('cn');
+          console.log(langs.currentLang);
+          // > cn
+      
+          langs.update('en');
+          console.log(langs.currentLang);
+          // > en
+          ```
+         */
+        get: function () {
+            return this._currentLang;
+        },
+        /**
+         * 获取当前语言
+         * @example Languages:set currentLang()
+          ```js
+          var langs = new h5i18n.Languages('cn');
+          var count = 0;
+          langs.on('change', function () {
+            count++;
+          });
+          langs.currentLang = 'en';
+          console.log(count);
+          // > 1
+      
+          langs.currentLang = 'en';
+          console.log(count);
+          // > 1
+          ```
+         */
+        set: function (value) {
+            if (this._currentLang === value) {
+                return;
+            }
+            this.update(value);
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Languages;
 }()); /*</function>*/
 exports.Languages = Languages;

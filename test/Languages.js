@@ -365,5 +365,32 @@ describe("src/ts/Languages.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "none"); examplejs_printLines = [];
   });
           
+  it("Languages:get currentLang()", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    examplejs_print(langs.currentLang);
+    assert.equal(examplejs_printLines.join("\n"), "cn"); examplejs_printLines = [];
+
+    langs.update('en');
+    examplejs_print(langs.currentLang);
+    assert.equal(examplejs_printLines.join("\n"), "en"); examplejs_printLines = [];
+  });
+          
+  it("Languages:set currentLang()", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var count = 0;
+    langs.on('change', function () {
+      count++;
+    });
+    langs.currentLang = 'en';
+    examplejs_print(count);
+    assert.equal(examplejs_printLines.join("\n"), "1"); examplejs_printLines = [];
+
+    langs.currentLang = 'en';
+    examplejs_print(count);
+    assert.equal(examplejs_printLines.join("\n"), "1"); examplejs_printLines = [];
+  });
+          
 });
          

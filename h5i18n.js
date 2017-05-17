@@ -131,8 +131,8 @@ function createEmitter() {
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.3.5
- * @date 2017-05-10
+ * @version 0.3.13
+ * @date 2017-05-17
  * @license MIT
  */
 /**
@@ -509,6 +509,12 @@ var Languages = (function () {
             });
         });
     };
+    /**
+     * 获取表达式中的文字
+     *
+     * @param langText 表达式
+     * @param lang 语言，默认为当前语言
+     */
     Languages.prototype.get = function (langText, lang) {
         lang = lang || this._currentLang;
         var langExpression = this.parse(langText);
@@ -523,6 +529,45 @@ var Languages = (function () {
         }
         return langExpression.optionsLang[this._defaultLang];
     };
+    Object.defineProperty(Languages.prototype, "currentLang", {
+        /**
+         * 获取当前语言
+         * @example Languages:attr
+          ```js
+          var langs = new h5i18n.Languages('cn');
+          console.log(langs.currentLang);
+          // > cn
+          langs.update('en');
+          console.log(langs.currentLang);
+          // > en
+          ```
+         */
+        get: function () {
+            return this._currentLang;
+        },
+        /**
+         * 获取当前语言
+         * @example Languages:attr
+          ```js
+          var langs = new h5i18n.Languages('cn');
+          var count = 0;
+          langs.on('change', function () {
+            count++;
+          });
+          langs.currentLang = 'en';
+          console.log(count);
+          // > 1
+          ```
+         */
+        set: function (value) {
+            if (this._currentLang === value) {
+                return;
+            }
+            this.update(value);
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Languages;
 }()); /*</function>*/
   var exports = {
