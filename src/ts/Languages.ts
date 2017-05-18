@@ -6,11 +6,11 @@ interface LangExpression {
   /**
    * 当前语言
    */
-  currentLang: string
+  locale: string
   /**
    * 当前内容
    */
-  currentText: string
+  localeText: string
 
   /**
    * 默认内容
@@ -229,12 +229,12 @@ class Languages {
   /**
    * 默认语言
    */
-  _defaultLang: string
+  _defaultLocale: string
 
   /**
    * 当前语言
    */
-  _currentLang: string
+  _locale: string
 
   /**
    * 语言相关属性
@@ -244,7 +244,7 @@ class Languages {
   /**
    * 语言字典
    */
-  _i18ns: { [key: string]: string }
+  _dictionarys: { [key: string]: string }
 
   _emitter: Emitter;
 
@@ -255,8 +255,8 @@ class Languages {
    * @example i18n():base
     ```js
     var langs = new h5i18n.Languages('cn');
-    langs.i18n({
-      'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+    langs.dictionary({
+      'click': '点击<!--{en}click--><!--{jp}クリック-->',
       'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
     });
 
@@ -272,7 +272,7 @@ class Languages {
     console.log(langs.get('默认双击<!--{*}dblclick-->', 'none'));
     // > 默认双击
 
-    langs.i18n();
+    langs.dictionary();
     console.log(langs.get('空<!--{*}none-->'));
     // > 空
 
@@ -283,8 +283,8 @@ class Languages {
    * @example i18n():default key
     ```js
     var langs = new h5i18n.Languages('cn');
-    langs.i18n({
-      'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+    langs.dictionary({
+      'click': '点击<!--{en}click--><!--{jp}クリック-->',
       'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
     });
 
@@ -292,32 +292,33 @@ class Languages {
     // > 点击
 
     console.log(langs.get('click<!--{*}-->', 'jp'));
-    // > クリックします
+    // > クリック
 
     console.log(langs.get('none<!--{*}-->'));
     // > none
     ```
    */
-  i18n(blos: { [key: string]: string }) {
+  dictionary(blos: { [key: string]: string }) {
     if (!blos) {
       return
     }
     Object.keys(blos).forEach((key) => {
-      this._i18ns[key] = blos[key]
+      this._dictionarys[key] = blos[key]
     })
   }
 
   /**
    * 构造多语言工具
    *
-   * @param lang 语言
+   * @param _defaultLocale 默认语言
+   * @param _attrs 替换的属性列表
    */
-  constructor(_defaultLang = 'cn', _attrs: string[]) {
-    this._defaultLang = _defaultLang
-    this._currentLang = _defaultLang
+  constructor(_defaultLocale = 'cn', _attrs: string[]) {
+    this._defaultLocale = _defaultLocale
+    this._locale = _defaultLocale
 
-    this._attrs = _attrs || languages_attrs;
-    this._i18ns = {}
+    this._attrs = _attrs || languages_attrs
+    this._dictionarys = {}
     this._emitter = createEmitter()
   }
 
@@ -344,20 +345,20 @@ class Languages {
   parse(text: string): LangExpression {
     let result: LangExpression = {
       optionsLang: {},
-      currentLang: null,
-      currentText: null,
+      locale: null,
+      localeText: null,
     }
 
-    let find
+    let find: boolean
 
     text = String(text).replace(
       /<!--\{([\w-]+)\}-->([^]*?)<!--\/\{\1\}-->|<!--\{([\w-]+|\*)\}([^]*?)-->/g,
-      (all, currentLang, currentText, optionLang, optionText) => {
+      (all, locale, localeText, optionLang, optionText) => {
         find = true
-        if (currentLang) {
-          result.currentLang = currentLang
-          result.currentText = currentText
-          result.optionsLang[currentLang] = currentText
+        if (locale) {
+          result.locale = locale
+          result.localeText = localeText
+          result.optionsLang[locale] = localeText
         } else {
           result.optionsLang[optionLang] = optionText
         }
@@ -372,24 +373,24 @@ class Languages {
     text = text.trim()
     if (text) {
       result.defaultText = text
-      if (!result.optionsLang[this._defaultLang]) {
-        result.optionsLang[this._defaultLang] = text
+      if (!result.optionsLang[this._defaultLocale]) {
+        result.optionsLang[this._defaultLocale] = text
       }
     }
 
     if (result.optionsLang['*'] !== undefined) {
-      let t;
+      let t: LangExpression;
       if (result.optionsLang['*'] === '') {
-        t = this.parse(this._i18ns[text])
+        t = this.parse(this._dictionarys[text])
       } else {
-        t = this.parse(this._i18ns[result.optionsLang['*']])
+        t = this.parse(this._dictionarys[result.optionsLang['*']])
       }
       if (t) {
         Object.keys(t.optionsLang).forEach((key) => {
           result.optionsLang[key] = t.optionsLang[key]
         })
-        result.currentLang = result.currentLang || t.currentLang
-        result.currentText = result.currentText || t.currentText
+        result.locale = result.locale || t.locale
+        result.localeText = result.localeText || t.localeText
       }
     }
 
@@ -415,8 +416,8 @@ class Languages {
 
     })
     if (!langExpression.optionsLang[_lang]) {
-      let lang = this._defaultLang
-      let text = langExpression.optionsLang[this._defaultLang] || ''
+      let lang = this._defaultLocale
+      let text = langExpression.optionsLang[this._defaultLocale] || ''
       result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
     }
 
@@ -429,12 +430,12 @@ class Languages {
    * @param lang 语言
    * @param parent 更新的节点，默认为全部
    */
-  update(_lang?: string, parent?: Element | string) {
-    _lang = _lang || this._currentLang
+  update(_locale?: string, parent?: Element | string) {
+    _locale = _locale || this._locale
 
-    if (this._currentLang !== _lang) {
-      this._currentLang = _lang
-      this._emitter.emit('change', _lang)
+    if (this._locale !== _locale) {
+      this._locale = _locale
+      this._emitter.emit('change', _locale)
     }
 
     // run in node
@@ -469,7 +470,7 @@ class Languages {
     }
 
     processNodes.forEach((node, index) => {
-      node.innerHTML = this.build(_lang, processTexts[index])
+      node.innerHTML = this.build(_locale, processTexts[index])
     })
 
     this._attrs.forEach((attr) => {
@@ -481,13 +482,13 @@ class Languages {
         if (!langExpression) {
           return
         }
-        if (!langExpression.optionsLang[this._defaultLang]) {
-          langExpression.optionsLang[this._defaultLang] = element.getAttribute(attr)
+        if (!langExpression.optionsLang[this._defaultLocale]) {
+          langExpression.optionsLang[this._defaultLocale] = element.getAttribute(attr)
         }
-        element.setAttribute(langAttr, this.build(_lang, langExpression))
+        element.setAttribute(langAttr, this.build(_locale, langExpression))
         element.setAttribute(attr,
-          langExpression.optionsLang[_lang] ||
-          langExpression.optionsLang[this._defaultLang]
+          langExpression.optionsLang[_locale] ||
+          langExpression.optionsLang[this._defaultLocale]
         )
       })
     })
@@ -498,61 +499,61 @@ class Languages {
    * 获取表达式中的文字
    *
    * @param langText 表达式
-   * @param lang 语言，默认为当前语言
+   * @param locale 语言，默认为当前语言
    */
-  get(langText: string, lang?: string) {
-    lang = lang || this._currentLang
+  get(langText: string, locale?: string) {
+    locale = locale || this._locale
 
     let langExpression = this.parse(langText)
     if (!langExpression) {
       return langText
     }
-    if (langExpression.optionsLang[lang] !== undefined) {
-      return langExpression.optionsLang[lang]
+    if (langExpression.optionsLang[locale] !== undefined) {
+      return langExpression.optionsLang[locale]
     }
     if (langExpression.defaultText !== undefined) {
       return langExpression.defaultText
     }
-    return langExpression.optionsLang[this._defaultLang]
+    return langExpression.optionsLang[this._defaultLocale]
   }
 
   /**
    * 获取当前语言
-   * @example Languages:get currentLang()
+   * @example Languages:get locale()
     ```js
     var langs = new h5i18n.Languages('cn');
-    console.log(langs.currentLang);
+    console.log(langs.locale);
     // > cn
 
     langs.update('en');
-    console.log(langs.currentLang);
+    console.log(langs.locale);
     // > en
     ```
    */
-  get currentLang() {
-    return this._currentLang
+  get locale() {
+    return this._locale
   }
 
   /**
    * 获取当前语言
-   * @example Languages:set currentLang()
+   * @example Languages:set locale()
     ```js
     var langs = new h5i18n.Languages('cn');
     var count = 0;
     langs.on('change', function () {
       count++;
     });
-    langs.currentLang = 'en';
+    langs.locale = 'en';
     console.log(count);
     // > 1
 
-    langs.currentLang = 'en';
+    langs.locale = 'en';
     console.log(count);
     // > 1
     ```
    */
-  set currentLang(value: string) {
-    if (this._currentLang === value) {
+  set locale(value: string) {
+    if (this._locale === value) {
       return
     }
     this.update(value)

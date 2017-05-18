@@ -1,6 +1,6 @@
 {
   "name": "h5i18n",
-  "version": "0.3.13",
+  "version": "0.4.0",
   "description": "A mobile page of internationalization development framework",
   "repository": {
     "type": "git",
@@ -11,6 +11,7 @@
     "debug": "gulp debug",
     "dev": "npm run debug",
     "dist": "npm run _update_version && gulp dist example && npm run test",
+    "dist2": "gulp dist example && npm run test",
     "mocha": "mocha",
     "mocha2": "mocha test/Languages.js",
     "test": "istanbul cover --hook-run-in-context node_modules/mocha/bin/_mocha -- -R spec",

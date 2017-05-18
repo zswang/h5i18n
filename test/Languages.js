@@ -322,8 +322,8 @@ describe("src/ts/Languages.ts", function () {
   it("i18n():base", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');
-    langs.i18n({
-      'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+    langs.dictionary({
+      'click': '点击<!--{en}click--><!--{jp}クリック-->',
       'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
     });
 
@@ -339,7 +339,7 @@ describe("src/ts/Languages.ts", function () {
     examplejs_print(langs.get('默认双击<!--{*}dblclick-->', 'none'));
     assert.equal(examplejs_printLines.join("\n"), "默认双击"); examplejs_printLines = [];
 
-    langs.i18n();
+    langs.dictionary();
     examplejs_print(langs.get('空<!--{*}none-->'));
     assert.equal(examplejs_printLines.join("\n"), "空"); examplejs_printLines = [];
 
@@ -350,8 +350,8 @@ describe("src/ts/Languages.ts", function () {
   it("i18n():default key", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');
-    langs.i18n({
-      'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+    langs.dictionary({
+      'click': '点击<!--{en}click--><!--{jp}クリック-->',
       'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
     });
 
@@ -359,35 +359,35 @@ describe("src/ts/Languages.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "点击"); examplejs_printLines = [];
 
     examplejs_print(langs.get('click<!--{*}-->', 'jp'));
-    assert.equal(examplejs_printLines.join("\n"), "クリックします"); examplejs_printLines = [];
+    assert.equal(examplejs_printLines.join("\n"), "クリック"); examplejs_printLines = [];
 
     examplejs_print(langs.get('none<!--{*}-->'));
     assert.equal(examplejs_printLines.join("\n"), "none"); examplejs_printLines = [];
   });
           
-  it("Languages:get currentLang()", function () {
+  it("Languages:get locale()", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');
-    examplejs_print(langs.currentLang);
+    examplejs_print(langs.locale);
     assert.equal(examplejs_printLines.join("\n"), "cn"); examplejs_printLines = [];
 
     langs.update('en');
-    examplejs_print(langs.currentLang);
+    examplejs_print(langs.locale);
     assert.equal(examplejs_printLines.join("\n"), "en"); examplejs_printLines = [];
   });
           
-  it("Languages:set currentLang()", function () {
+  it("Languages:set locale()", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');
     var count = 0;
     langs.on('change', function () {
       count++;
     });
-    langs.currentLang = 'en';
+    langs.locale = 'en';
     examplejs_print(count);
     assert.equal(examplejs_printLines.join("\n"), "1"); examplejs_printLines = [];
 
-    langs.currentLang = 'en';
+    langs.locale = 'en';
     examplejs_print(count);
     assert.equal(examplejs_printLines.join("\n"), "1"); examplejs_printLines = [];
   });

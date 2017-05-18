@@ -131,8 +131,8 @@ function createEmitter() {
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.3.13
- * @date 2017-05-17
+ * @version 0.4.0
+ * @date 2017-05-18
  * @license MIT
  */
 /**
@@ -304,14 +304,15 @@ var Languages = (function () {
     /**
      * 构造多语言工具
      *
-     * @param lang 语言
+     * @param _defaultLocale 默认语言
+     * @param _attrs 替换的属性列表
      */
-    function Languages(_defaultLang, _attrs) {
-        if (_defaultLang === void 0) { _defaultLang = 'cn'; }
-        this._defaultLang = _defaultLang;
-        this._currentLang = _defaultLang;
+    function Languages(_defaultLocale, _attrs) {
+        if (_defaultLocale === void 0) { _defaultLocale = 'cn'; }
+        this._defaultLocale = _defaultLocale;
+        this._locale = _defaultLocale;
         this._attrs = _attrs || languages_attrs;
-        this._i18ns = {};
+        this._dictionarys = {};
         this._emitter = createEmitter();
     }
     /**
@@ -321,8 +322,8 @@ var Languages = (function () {
      * @example i18n():base
       ```js
       var langs = new h5i18n.Languages('cn');
-      langs.i18n({
-        'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+      langs.dictionary({
+        'click': '点击<!--{en}click--><!--{jp}クリック-->',
         'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
       });
       console.log(langs.get('<!--{*}click-->'));
@@ -333,7 +334,7 @@ var Languages = (function () {
       // > 双击
       console.log(langs.get('默认双击<!--{*}dblclick-->', 'none'));
       // > 默认双击
-      langs.i18n();
+      langs.dictionary();
       console.log(langs.get('空<!--{*}none-->'));
       // > 空
       console.log(langs.get('无设置'));
@@ -342,25 +343,25 @@ var Languages = (function () {
      * @example i18n():default key
       ```js
       var langs = new h5i18n.Languages('cn');
-      langs.i18n({
-        'click': '点击<!--{en}click--><!--{jp}クリックします-->',
+      langs.dictionary({
+        'click': '点击<!--{en}click--><!--{jp}クリック-->',
         'dblclick': '双击<!--{en}Double click--><!--{jp}ダブルクリック-->',
       });
       console.log(langs.get('click<!--{*}-->'));
       // > 点击
       console.log(langs.get('click<!--{*}-->', 'jp'));
-      // > クリックします
+      // > クリック
       console.log(langs.get('none<!--{*}-->'));
       // > none
       ```
      */
-    Languages.prototype.i18n = function (blos) {
+    Languages.prototype.dictionary = function (blos) {
         var _this = this;
         if (!blos) {
             return;
         }
         Object.keys(blos).forEach(function (key) {
-            _this._i18ns[key] = blos[key];
+            _this._dictionarys[key] = blos[key];
         });
     };
     Languages.prototype.on = function (event, fn) {
@@ -383,16 +384,16 @@ var Languages = (function () {
     Languages.prototype.parse = function (text) {
         var result = {
             optionsLang: {},
-            currentLang: null,
-            currentText: null,
+            locale: null,
+            localeText: null,
         };
         var find;
-        text = String(text).replace(/<!--\{([\w-]+)\}-->([^]*?)<!--\/\{\1\}-->|<!--\{([\w-]+|\*)\}([^]*?)-->/g, function (all, currentLang, currentText, optionLang, optionText) {
+        text = String(text).replace(/<!--\{([\w-]+)\}-->([^]*?)<!--\/\{\1\}-->|<!--\{([\w-]+|\*)\}([^]*?)-->/g, function (all, locale, localeText, optionLang, optionText) {
             find = true;
-            if (currentLang) {
-                result.currentLang = currentLang;
-                result.currentText = currentText;
-                result.optionsLang[currentLang] = currentText;
+            if (locale) {
+                result.locale = locale;
+                result.localeText = localeText;
+                result.optionsLang[locale] = localeText;
             }
             else {
                 result.optionsLang[optionLang] = optionText;
@@ -405,24 +406,24 @@ var Languages = (function () {
         text = text.trim();
         if (text) {
             result.defaultText = text;
-            if (!result.optionsLang[this._defaultLang]) {
-                result.optionsLang[this._defaultLang] = text;
+            if (!result.optionsLang[this._defaultLocale]) {
+                result.optionsLang[this._defaultLocale] = text;
             }
         }
         if (result.optionsLang['*'] !== undefined) {
             var t_1;
             if (result.optionsLang['*'] === '') {
-                t_1 = this.parse(this._i18ns[text]);
+                t_1 = this.parse(this._dictionarys[text]);
             }
             else {
-                t_1 = this.parse(this._i18ns[result.optionsLang['*']]);
+                t_1 = this.parse(this._dictionarys[result.optionsLang['*']]);
             }
             if (t_1) {
                 Object.keys(t_1.optionsLang).forEach(function (key) {
                     result.optionsLang[key] = t_1.optionsLang[key];
                 });
-                result.currentLang = result.currentLang || t_1.currentLang;
-                result.currentText = result.currentText || t_1.currentText;
+                result.locale = result.locale || t_1.locale;
+                result.localeText = result.localeText || t_1.localeText;
             }
         }
         return result;
@@ -445,8 +446,8 @@ var Languages = (function () {
             }
         });
         if (!langExpression.optionsLang[_lang]) {
-            var lang = this._defaultLang;
-            var text = langExpression.optionsLang[this._defaultLang] || '';
+            var lang = this._defaultLocale;
+            var text = langExpression.optionsLang[this._defaultLocale] || '';
             result += "<!--{" + lang + "}-->" + text + "<!--/{" + lang + "}-->";
         }
         return result;
@@ -457,12 +458,12 @@ var Languages = (function () {
      * @param lang 语言
      * @param parent 更新的节点，默认为全部
      */
-    Languages.prototype.update = function (_lang, parent) {
+    Languages.prototype.update = function (_locale, parent) {
         var _this = this;
-        _lang = _lang || this._currentLang;
-        if (this._currentLang !== _lang) {
-            this._currentLang = _lang;
-            this._emitter.emit('change', _lang);
+        _locale = _locale || this._locale;
+        if (this._locale !== _locale) {
+            this._locale = _locale;
+            this._emitter.emit('change', _locale);
         }
         // run in node
         if (typeof document === 'undefined') {
@@ -489,7 +490,7 @@ var Languages = (function () {
             processTexts.push(this.parse(node.parentNode.innerHTML));
         }
         processNodes.forEach(function (node, index) {
-            node.innerHTML = _this.build(_lang, processTexts[index]);
+            node.innerHTML = _this.build(_locale, processTexts[index]);
         });
         this._attrs.forEach(function (attr) {
             var langAttr = "data-lang-" + attr;
@@ -500,12 +501,12 @@ var Languages = (function () {
                 if (!langExpression) {
                     return;
                 }
-                if (!langExpression.optionsLang[_this._defaultLang]) {
-                    langExpression.optionsLang[_this._defaultLang] = element.getAttribute(attr);
+                if (!langExpression.optionsLang[_this._defaultLocale]) {
+                    langExpression.optionsLang[_this._defaultLocale] = element.getAttribute(attr);
                 }
-                element.setAttribute(langAttr, _this.build(_lang, langExpression));
-                element.setAttribute(attr, langExpression.optionsLang[_lang] ||
-                    langExpression.optionsLang[_this._defaultLang]);
+                element.setAttribute(langAttr, _this.build(_locale, langExpression));
+                element.setAttribute(attr, langExpression.optionsLang[_locale] ||
+                    langExpression.optionsLang[_this._defaultLocale]);
             });
         });
     };
@@ -513,54 +514,57 @@ var Languages = (function () {
      * 获取表达式中的文字
      *
      * @param langText 表达式
-     * @param lang 语言，默认为当前语言
+     * @param locale 语言，默认为当前语言
      */
-    Languages.prototype.get = function (langText, lang) {
-        lang = lang || this._currentLang;
+    Languages.prototype.get = function (langText, locale) {
+        locale = locale || this._locale;
         var langExpression = this.parse(langText);
         if (!langExpression) {
             return langText;
         }
-        if (langExpression.optionsLang[lang] !== undefined) {
-            return langExpression.optionsLang[lang];
+        if (langExpression.optionsLang[locale] !== undefined) {
+            return langExpression.optionsLang[locale];
         }
         if (langExpression.defaultText !== undefined) {
             return langExpression.defaultText;
         }
-        return langExpression.optionsLang[this._defaultLang];
+        return langExpression.optionsLang[this._defaultLocale];
     };
-    Object.defineProperty(Languages.prototype, "currentLang", {
+    Object.defineProperty(Languages.prototype, "locale", {
         /**
          * 获取当前语言
-         * @example Languages:attr
+         * @example Languages:get locale()
           ```js
           var langs = new h5i18n.Languages('cn');
-          console.log(langs.currentLang);
+          console.log(langs.locale);
           // > cn
           langs.update('en');
-          console.log(langs.currentLang);
+          console.log(langs.locale);
           // > en
           ```
          */
         get: function () {
-            return this._currentLang;
+            return this._locale;
         },
         /**
          * 获取当前语言
-         * @example Languages:attr
+         * @example Languages:set locale()
           ```js
           var langs = new h5i18n.Languages('cn');
           var count = 0;
           langs.on('change', function () {
             count++;
           });
-          langs.currentLang = 'en';
+          langs.locale = 'en';
+          console.log(count);
+          // > 1
+          langs.locale = 'en';
           console.log(count);
           // > 1
           ```
          */
         set: function (value) {
-            if (this._currentLang === value) {
+            if (this._locale === value) {
                 return;
             }
             this.update(value);

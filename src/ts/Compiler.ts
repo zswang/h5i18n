@@ -89,7 +89,7 @@ class Compiler {
   static replace(code: string, options: CompilerOptions) {
     let languages = new Languages(options.defaultLang || 'cn', [])
     if (options.map) {
-      languages.i18n(options.map)
+      languages.dictionary(options.map)
     }
     code = String(code).replace(/(?:(?:\w+\.)+)get\((['"`])(.*?-->)\1\)/g, function (all, quoted, text) {
       // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
