@@ -131,7 +131,7 @@ function createEmitter() {
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.4.0
+ * @version 0.5.0
  * @date 2017-05-18
  * @license MIT
  */
@@ -304,13 +304,13 @@ var Languages = (function () {
     /**
      * 构造多语言工具
      *
-     * @param _defaultLocale 默认语言
+     * @param _defaultLang 默认语言
      * @param _attrs 替换的属性列表
      */
-    function Languages(_defaultLocale, _attrs) {
-        if (_defaultLocale === void 0) { _defaultLocale = 'cn'; }
-        this._defaultLocale = _defaultLocale;
-        this._locale = _defaultLocale;
+    function Languages(_defaultLang, _attrs) {
+        if (_defaultLang === void 0) { _defaultLang = 'cn'; }
+        this._defaultLang = _defaultLang;
+        this._locale = _defaultLang;
         this._attrs = _attrs || languages_attrs;
         this._dictionarys = {};
         this._emitter = createEmitter();
@@ -406,8 +406,8 @@ var Languages = (function () {
         text = text.trim();
         if (text) {
             result.defaultText = text;
-            if (!result.optionsLang[this._defaultLocale]) {
-                result.optionsLang[this._defaultLocale] = text;
+            if (!result.optionsLang[this._defaultLang]) {
+                result.optionsLang[this._defaultLang] = text;
             }
         }
         if (result.optionsLang['*'] !== undefined) {
@@ -446,8 +446,8 @@ var Languages = (function () {
             }
         });
         if (!langExpression.optionsLang[_lang]) {
-            var lang = this._defaultLocale;
-            var text = langExpression.optionsLang[this._defaultLocale] || '';
+            var lang = this._defaultLang;
+            var text = langExpression.optionsLang[this._defaultLang] || '';
             result += "<!--{" + lang + "}-->" + text + "<!--/{" + lang + "}-->";
         }
         return result;
@@ -501,12 +501,12 @@ var Languages = (function () {
                 if (!langExpression) {
                     return;
                 }
-                if (!langExpression.optionsLang[_this._defaultLocale]) {
-                    langExpression.optionsLang[_this._defaultLocale] = element.getAttribute(attr);
+                if (!langExpression.optionsLang[_this._defaultLang]) {
+                    langExpression.optionsLang[_this._defaultLang] = element.getAttribute(attr);
                 }
                 element.setAttribute(langAttr, _this.build(_locale, langExpression));
                 element.setAttribute(attr, langExpression.optionsLang[_locale] ||
-                    langExpression.optionsLang[_this._defaultLocale]);
+                    langExpression.optionsLang[_this._defaultLang]);
             });
         });
     };
@@ -528,7 +528,7 @@ var Languages = (function () {
         if (langExpression.defaultText !== undefined) {
             return langExpression.defaultText;
         }
-        return langExpression.optionsLang[this._defaultLocale];
+        return langExpression.optionsLang[this._defaultLang];
     };
     Object.defineProperty(Languages.prototype, "locale", {
         /**

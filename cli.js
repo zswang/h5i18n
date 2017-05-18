@@ -14,7 +14,7 @@ program
   .usage('[options] <file ...>')
   .option('-o, --output <file>', 'output file')
   .option('-d, --defaultLang <default language>', 'set default language.')
-  .option('-l, --lang <language>', 'set current language.')
+  .option('-l, --locale <language>', 'set current language.')
   .option('-v, --version', 'output version number and exit')
   .option('-m, --map <i18n file>', 'map of languages file.')
   .parse(process.argv);
@@ -29,7 +29,7 @@ program.args.forEach(function (filename) {
   }
   contents.push(compiler.Compiler.replace(fs.readFileSync(filename), {
     defaultLang: program.defaultLang,
-    lang: program.lang,
+    locale: program.locale,
     map: i18n,
   }));
 });

@@ -16,17 +16,17 @@ describe("src/ts/Compiler.ts", function () {
   it("Compiler.replace(): quoted", function () {
     examplejs_printLines = [];
     examplejs_print(compiler.Compiler.replace("language.get('点击<!--{en}click-->')", {
-      lang: 'en'
+      locale: 'en'
     }));
     assert.equal(examplejs_printLines.join("\n"), "'click'"); examplejs_printLines = [];
 
     examplejs_print(compiler.Compiler.replace("language.get(`点击<!--{en}click-->`)", {
-      lang: 'en'
+      locale: 'en'
     }));
     assert.equal(examplejs_printLines.join("\n"), "`click`"); examplejs_printLines = [];
 
     examplejs_print(compiler.Compiler.replace("language.get(\"点击<!--{en}click-->\")", {
-      lang: 'en'
+      locale: 'en'
     }));
     assert.equal(examplejs_printLines.join("\n"), "\"click\""); examplejs_printLines = [];
   });
@@ -34,12 +34,12 @@ describe("src/ts/Compiler.ts", function () {
   it("Compiler.replace(): attribute", function () {
     examplejs_printLines = [];
     examplejs_print(compiler.Compiler.replace('<img src="cn.png" data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', {
-      lang: 'jp'
+      locale: 'jp'
     }));
     assert.equal(examplejs_printLines.join("\n"), "<img src=\"jp.png\">"); examplejs_printLines = [];
 
     examplejs_print(compiler.Compiler.replace('<img src="cn.png"title="标志"data-lang-title="<!--{jp}標識--><!--{en}logo-->"data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', {
-      lang: 'jp'
+      locale: 'jp'
     }));
     assert.equal(examplejs_printLines.join("\n"), "<img src=\"jp.png\"title=\"標識\">"); examplejs_printLines = [];
   });
@@ -47,12 +47,12 @@ describe("src/ts/Compiler.ts", function () {
   it("Compiler.replace(): inner html", function () {
     examplejs_printLines = [];
     examplejs_print(compiler.Compiler.replace('<span>中文<!--{en}English--><!--{jp}日本語--></span>', {
-      lang: 'jp'
+      locale: 'jp'
     }));
     assert.equal(examplejs_printLines.join("\n"), "<span>日本語</span>"); examplejs_printLines = [];
 
     examplejs_print(compiler.Compiler.replace('<div title="中文" data-lang-title="<!--{jp}日本語--><!--{en}English-->"><div>中文<!--{en}English--><!--{jp}日本語--></div></div>', {
-      lang: 'jp'
+      locale: 'jp'
     }));
     assert.equal(examplejs_printLines.join("\n"), "<div title=\"日本語\"><div>日本語</div></div>"); examplejs_printLines = [];
   });
@@ -60,7 +60,7 @@ describe("src/ts/Compiler.ts", function () {
   it("Compiler.replace(): map", function () {
     examplejs_printLines = [];
     examplejs_print(compiler.Compiler.replace('<span>中文<!--{*}language--></span>', {
-      lang: 'jp',
+      locale: 'jp',
       map: {
         language: '<!--{en}English--><!--{jp}日本語-->'
       }
@@ -71,12 +71,12 @@ describe("src/ts/Compiler.ts", function () {
   it("Compiler.replace(): coverage", function () {
     examplejs_printLines = [];
     examplejs_print(compiler.Compiler.replace('<span sa-data-lang-title="中文">', {
-      lang: 'jp',
+      locale: 'jp',
     }));
     assert.equal(examplejs_printLines.join("\n"), "<span sa-data-lang-title=\"中文\">"); examplejs_printLines = [];
 
     examplejs_print(compiler.Compiler.replace('中文<!--{en}English--><!--{jp}日本語--></span>', {
-      lang: 'jp',
+      locale: 'jp',
     }));
     assert.equal(examplejs_printLines.join("\n"), "中文<!--{en}English--><!--{jp}日本語--></span>"); examplejs_printLines = [];
 
@@ -86,7 +86,7 @@ describe("src/ts/Compiler.ts", function () {
   it("Compiler.replace(): case1", function () {
     examplejs_printLines = [];
     examplejs_print(compiler.Compiler.replace('console.info(languages.get("中文<!--{en}English-->"))', {
-      lang: 'en',
+      locale: 'en',
     }));
     assert.equal(examplejs_printLines.join("\n"), "console.info(\"English\")"); examplejs_printLines = [];
   });

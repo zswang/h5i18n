@@ -229,7 +229,7 @@ class Languages {
   /**
    * 默认语言
    */
-  _defaultLocale: string
+  _defaultLang: string
 
   /**
    * 当前语言
@@ -310,12 +310,12 @@ class Languages {
   /**
    * 构造多语言工具
    *
-   * @param _defaultLocale 默认语言
+   * @param _defaultLang 默认语言
    * @param _attrs 替换的属性列表
    */
-  constructor(_defaultLocale = 'cn', _attrs: string[]) {
-    this._defaultLocale = _defaultLocale
-    this._locale = _defaultLocale
+  constructor(_defaultLang = 'cn', _attrs: string[]) {
+    this._defaultLang = _defaultLang
+    this._locale = _defaultLang
 
     this._attrs = _attrs || languages_attrs
     this._dictionarys = {}
@@ -373,8 +373,8 @@ class Languages {
     text = text.trim()
     if (text) {
       result.defaultText = text
-      if (!result.optionsLang[this._defaultLocale]) {
-        result.optionsLang[this._defaultLocale] = text
+      if (!result.optionsLang[this._defaultLang]) {
+        result.optionsLang[this._defaultLang] = text
       }
     }
 
@@ -416,8 +416,8 @@ class Languages {
 
     })
     if (!langExpression.optionsLang[_lang]) {
-      let lang = this._defaultLocale
-      let text = langExpression.optionsLang[this._defaultLocale] || ''
+      let lang = this._defaultLang
+      let text = langExpression.optionsLang[this._defaultLang] || ''
       result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
     }
 
@@ -482,13 +482,13 @@ class Languages {
         if (!langExpression) {
           return
         }
-        if (!langExpression.optionsLang[this._defaultLocale]) {
-          langExpression.optionsLang[this._defaultLocale] = element.getAttribute(attr)
+        if (!langExpression.optionsLang[this._defaultLang]) {
+          langExpression.optionsLang[this._defaultLang] = element.getAttribute(attr)
         }
         element.setAttribute(langAttr, this.build(_locale, langExpression))
         element.setAttribute(attr,
           langExpression.optionsLang[_locale] ||
-          langExpression.optionsLang[this._defaultLocale]
+          langExpression.optionsLang[this._defaultLang]
         )
       })
     })
@@ -514,7 +514,7 @@ class Languages {
     if (langExpression.defaultText !== undefined) {
       return langExpression.defaultText
     }
-    return langExpression.optionsLang[this._defaultLocale]
+    return langExpression.optionsLang[this._defaultLang]
   }
 
   /**
