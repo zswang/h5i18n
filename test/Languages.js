@@ -66,8 +66,40 @@ describe("src/ts/Languages.ts", function () {
   global.document = global_document;
   });
           
+  it("jsdom@Languages:title", function (done) {
+    jsdom.env("  <head>\n    <title data-lang-content=\"<!--{en}example--><!--{jp}サンプル-->\">示例</title>\n  </head>", {
+        features: {
+          FetchExternalResources : ["script", "link"],
+          ProcessExternalResources: ["script"]
+        }
+      },
+      function (err, window) {
+        global.window = window;
+        ["document","NodeFilter"].forEach(
+          function (key) {
+            global[key] = window[key];
+          }
+        );
+        assert.equal(err, null);
+        done();
+      }
+    );
+  });
+          
+  it("Languages:title", function () {
+    examplejs_printLines = [];
+  var langs = new h5i18n.Languages('cn');
+  langs.update('en');
+  examplejs_print(document.title);
+  assert.equal(examplejs_printLines.join("\n"), "example"); examplejs_printLines = [];
+
+  langs.update('none');
+  examplejs_print(document.title);
+  assert.equal(examplejs_printLines.join("\n"), "示例"); examplejs_printLines = [];
+  });
+          
   it("jsdom@Languages:attr", function (done) {
-    jsdom.env("  <img src=\"img/cn.png\" data-lang-src=\"<!--{en}img/en.png-->\">\n  <img src=\"img/cn.png\" data-lang-src=\"<!--{cn}img/cn.png--><!--{en}img/en.png-->\">\n  <img src=\"img/cn.png\" data-lang-src=\"none\">", {
+    jsdom.env("  <head>\n    <title>示例</title>\n  </head>\n  <body>\n    <img src=\"img/cn.png\" data-lang-src=\"<!--{en}img/en.png-->\">\n    <img src=\"img/cn.png\" data-lang-src=\"<!--{cn}img/cn.png--><!--{en}img/en.png-->\">\n    <img src=\"img/cn.png\" data-lang-src=\"none\">\n  </body>", {
         features: {
           FetchExternalResources : ["script", "link"],
           ProcessExternalResources: ["script"]
@@ -101,7 +133,7 @@ describe("src/ts/Languages.ts", function () {
   });
           
   it("jsdom@Languages:update default", function (done) {
-    jsdom.env("  <span>中文1<!--{en}English1--></span>\n  <span>中文2<!--{en}English2--></span>", {
+    jsdom.env("  <body>\n    <span>中文1<!--{en}English1--></span>\n    <span>中文2<!--{en}English2--></span>\n  </body>", {
         features: {
           FetchExternalResources : ["script", "link"],
           ProcessExternalResources: ["script"]
@@ -169,7 +201,7 @@ describe("src/ts/Languages.ts", function () {
   });
           
   it("jsdom@Languages:update empty", function (done) {
-    jsdom.env("  <div>\n    <span>中文<!--{en}English--></span>\n    empty<!--empty-->\n  </div>", {
+    jsdom.env("  <head>\n    <title data-lang-content=\"\">示例</title>\n  </head>\n  <body>\n    <div>\n      <span>中文<!--{en}English--></span>\n      empty<!--empty-->\n    </div>\n  </body>", {
         features: {
           FetchExternalResources : ["script", "link"],
           ProcessExternalResources: ["script"]
@@ -194,8 +226,8 @@ describe("src/ts/Languages.ts", function () {
   var div = document.querySelector('div');
   langs.update('en');
 
-  examplejs_print(JSON.stringify(div.innerHTML));
-  assert.equal(examplejs_printLines.join("\n"), "\"\\n    <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>\\n    empty<!--empty-->\\n  \""); examplejs_printLines = [];
+  examplejs_print(JSON.stringify(div.innerHTML.replace(/\s+/g, '')));
+  assert.equal(examplejs_printLines.join("\n"), "\"<span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>empty<!--empty-->\""); examplejs_printLines = [];
   });
           
   it("jsdom@Languages:update not found", function (done) {
@@ -319,7 +351,7 @@ describe("src/ts/Languages.ts", function () {
   assert.equal(examplejs_printLines.join("\n"), "3"); examplejs_printLines = [];
   });
           
-  it("i18n():base", function () {
+  it("dictionary():base", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');
     langs.dictionary({
@@ -347,7 +379,7 @@ describe("src/ts/Languages.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "无设置"); examplejs_printLines = [];
   });
           
-  it("i18n():default key", function () {
+  it("dictionary():default key", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');
     langs.dictionary({

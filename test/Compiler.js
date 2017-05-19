@@ -31,6 +31,19 @@ describe("src/ts/Compiler.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "\"click\""); examplejs_printLines = [];
   });
           
+  it("Compiler.replace(): title", function () {
+    examplejs_printLines = [];
+    examplejs_print(compiler.Compiler.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', {
+      locale: 'jp'
+    }));
+    assert.equal(examplejs_printLines.join("\n"), "<title>サンプル</title>"); examplejs_printLines = [];
+
+    examplejs_print(compiler.Compiler.replace('<title data-a="start" data-lang-content="<!--{en}example--><!--{jp}サンプル-->" data-b="end">示例</title>', {
+      locale: 'jp'
+    }));
+    assert.equal(examplejs_printLines.join("\n"), "<title data-a=\"start\" data-b=\"end\">サンプル</title>"); examplejs_printLines = [];
+  });
+          
   it("Compiler.replace(): attribute", function () {
     examplejs_printLines = [];
     examplejs_print(compiler.Compiler.replace('<img src="cn.png" data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', {

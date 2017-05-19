@@ -27,6 +27,18 @@ var Compiler = (function () {
       }));
       // > "click"
       ```
+     * @example Compiler.replace(): title
+      ```js
+      console.log(compiler.Compiler.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', {
+        locale: 'jp'
+      }));
+      // > <title>サンプル</title>
+  
+      console.log(compiler.Compiler.replace('<title data-a="start" data-lang-content="<!--{en}example--><!--{jp}サンプル-->" data-b="end">示例</title>', {
+        locale: 'jp'
+      }));
+      // > <title data-a="start" data-b="end">サンプル</title>
+      ```
      * @example Compiler.replace(): attribute
       ```js
       console.log(compiler.Compiler.replace('<img src="cn.png" data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', {
@@ -91,6 +103,8 @@ var Compiler = (function () {
         code = String(code).replace(/(?:(?:\w+\.)+)get\((['"`])(.*?-->)\1\)/g, function (all, quoted, text) {
             // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
             return quoted + languages.get(text, options.locale) + quoted;
+        }).replace(/<title(?=\s)((?:"[^"]*"|'[^']*'|[^'"<>])*?)\s+data-lang-content=('|")(.*?)\2((?:"[^"]*"|'[^']*'|[^'"<>])*)>([^]*?)<\/title>/g, function (all, start, quoted, attr, end, content) {
+            return "<title" + start + end + ">" + languages.get(content + attr, options.locale) + "</title>";
         }).replace(/<("[^"]*"|'[^']*'|[^'"<>])+(data-lang-\w+)("[^"]*"|'[^']*'|[^'"<>])+>/g, function (all) {
             // <input type="text" placeholder="中文" data-lang-placeholder="<!--{en}English--><!--{jp}日本語-->">
             var dict = {};
@@ -118,7 +132,7 @@ var Compiler = (function () {
             var text = match[1];
             var left = RegExp['$`'];
             var right = match[2] + RegExp["$'"];
-            match = left.match(new RegExp('<(' + tag + ')(?:"[^"]*"|\'[^\']*\'|[^"\'>])*>(?![^]*<\\1(?:"[^"]*"|\'[^\']*\'|[^"\'>])*>)'));
+            match = left.match(new RegExp("<(" + tag + ")(?:\"[^\"]*\"|'[^']*'|[^\"'>])*>(?![^]*<\\1(?:\"[^\"]*\"|'[^']*'|[^\"'>])*>)"));
             if (!match) {
                 break;
             }

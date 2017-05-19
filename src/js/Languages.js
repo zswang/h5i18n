@@ -71,11 +71,32 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label'];
   langs.update('en');
   global.document = global_document;
   ```
+ * @example Languages:title
+  ```html
+  <head>
+    <title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>
+  </head>
+  ```
+  ```js
+  var langs = new h5i18n.Languages('cn');
+  langs.update('en');
+  console.log(document.title);
+  // > example
+
+  langs.update('none');
+  console.log(document.title);
+  // > 示例
+  ```
  * @example Languages:attr
   ```html
-  <img src="img/cn.png" data-lang-src="<!--{en}img/en.png-->">
-  <img src="img/cn.png" data-lang-src="<!--{cn}img/cn.png--><!--{en}img/en.png-->">
-  <img src="img/cn.png" data-lang-src="none">
+  <head>
+    <title>示例</title>
+  </head>
+  <body>
+    <img src="img/cn.png" data-lang-src="<!--{en}img/en.png-->">
+    <img src="img/cn.png" data-lang-src="<!--{cn}img/cn.png--><!--{en}img/en.png-->">
+    <img src="img/cn.png" data-lang-src="none">
+  </body>
   ```
   ```js
   var langs = new h5i18n.Languages('cn');
@@ -91,8 +112,10 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label'];
   ```
  * @example Languages:update default
   ```html
-  <span>中文1<!--{en}English1--></span>
-  <span>中文2<!--{en}English2--></span>
+  <body>
+    <span>中文1<!--{en}English1--></span>
+    <span>中文2<!--{en}English2--></span>
+  </body>
   ```
   ```js
   var langs = new h5i18n.Languages('cn');
@@ -125,18 +148,23 @@ var languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label'];
   ```
  * @example Languages:update empty
   ```html
-  <div>
-    <span>中文<!--{en}English--></span>
-    empty<!--empty-->
-  </div>
+  <head>
+    <title data-lang-content="">示例</title>
+  </head>
+  <body>
+    <div>
+      <span>中文<!--{en}English--></span>
+      empty<!--empty-->
+    </div>
+  </body>
   ```
   ```js
   var langs = new h5i18n.Languages('cn');
   var div = document.querySelector('div');
   langs.update('en');
 
-  console.log(JSON.stringify(div.innerHTML));
-  // > "\n    <span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>\n    empty<!--empty-->\n  "
+  console.log(JSON.stringify(div.innerHTML.replace(/\s+/g, '')));
+  // > "<span><!--{en}-->English<!--/{en}--><!--{cn}中文--></span>empty<!--empty-->"
   ```
  * @example Languages:update not found
   ```html
@@ -223,7 +251,7 @@ var Languages = (function () {
      * 增加语言字典
      *
      * @param blos 语言字典
-     * @example i18n():base
+     * @example dictionary():base
       ```js
       var langs = new h5i18n.Languages('cn');
       langs.dictionary({
@@ -251,7 +279,7 @@ var Languages = (function () {
       // > 无设置
   
       ```
-     * @example i18n():default key
+     * @example dictionary():default key
       ```js
       var langs = new h5i18n.Languages('cn');
       langs.dictionary({
@@ -423,6 +451,26 @@ var Languages = (function () {
                     langExpression.optionsLang[_this._defaultLang]);
             });
         });
+        if (parent === document.documentElement) {
+            var contentAttr = 'data-lang-content';
+            var element = document.querySelector('title');
+            if (element) {
+                if (element.hasAttribute(contentAttr)) {
+                    var langText = element.getAttribute(contentAttr);
+                    var langExpression = this.parse(langText);
+                    if (!langExpression) {
+                        return;
+                    }
+                    if (!langExpression.optionsLang[this._defaultLang]) {
+                        langExpression.optionsLang[this._defaultLang] = element.textContent;
+                    }
+                    element.setAttribute(contentAttr, this.build(_locale, langExpression));
+                    element.textContent =
+                        langExpression.optionsLang[_locale] ||
+                            langExpression.optionsLang[this._defaultLang];
+                }
+            }
+        }
     };
     /**
      * 获取表达式中的文字

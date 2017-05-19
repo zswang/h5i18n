@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>h5i18n demo</title>
+  <title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>
   <meta charset="utf-8">
   <link rel="stylesheet" href="./css/main.css">
 </head>
@@ -96,7 +96,7 @@
 
         document.querySelector('h5').innerHTML = languages.get('中文<!--{en}English--><!--{jp}日本語-->');
 
-        languages.i18n({
+        languages.dictionary({
           "813": '<!--{en}English--><!--{jp}日本語-->',
         });
         document.querySelector('h5:nth-of-type(2)').innerHTML = languages.get('中文<!--{*}813-->');
