@@ -68,7 +68,6 @@ gulp.task('example', function() {
     ])
     .pipe(examplejs({
       header: `
-global.compiler = require('../lib/compiler.js');
 global.h5i18n = require('../h5i18n.js');
       `,
       globals: 'document,NodeFilter'

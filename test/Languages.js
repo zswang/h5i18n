@@ -1,5 +1,4 @@
 
-global.compiler = require('../lib/compiler.js');
 global.h5i18n = require('../h5i18n.js');
       
 
@@ -422,6 +421,76 @@ describe("src/ts/Languages.ts", function () {
     langs.locale = 'en';
     examplejs_print(count);
     assert.equal(examplejs_printLines.join("\n"), "1"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() quoted", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    examplejs_print(langs.replace("language.get('点击<!--{en}click-->')", 'en'));
+    assert.equal(examplejs_printLines.join("\n"), "'click'"); examplejs_printLines = [];
+
+    examplejs_print(langs.replace("language.get(`点击<!--{en}click-->`)", 'en'));
+    assert.equal(examplejs_printLines.join("\n"), "`click`"); examplejs_printLines = [];
+
+    examplejs_print(langs.replace("language.get(\"点击<!--{en}click-->\")", 'en'));
+    assert.equal(examplejs_printLines.join("\n"), "\"click\""); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() title", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    examplejs_print(langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "<title>サンプル</title>"); examplejs_printLines = [];
+
+    examplejs_print(langs.replace('<title data-a="start" data-lang-content="<!--{en}example--><!--{jp}サンプル-->" data-b="end">示例</title>', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "<title data-a=\"start\" data-b=\"end\">サンプル</title>"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() attribute", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    examplejs_print(langs.replace('<img src="cn.png" data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "<img src=\"jp.png\">"); examplejs_printLines = [];
+
+    examplejs_print(langs.replace('<img src="cn.png"title="标志"data-lang-title="<!--{jp}標識--><!--{en}logo-->"data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "<img src=\"jp.png\"title=\"標識\">"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() inner html", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    examplejs_print(langs.replace('<span>中文<!--{en}English--><!--{jp}日本語--></span>', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "<span>日本語</span>"); examplejs_printLines = [];
+
+    examplejs_print(langs.replace('<div title="中文" data-lang-title="<!--{jp}日本語--><!--{en}English-->"><div>中文<!--{en}English--><!--{jp}日本語--></div></div>', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "<div title=\"日本語\"><div>日本語</div></div>"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() map", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    langs.dictionary({
+      language: '<!--{en}English--><!--{jp}日本語-->'
+    });
+    examplejs_print(langs.replace('<span>中文<!--{*}language--></span>', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "<span>日本語</span>"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() coverage", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    examplejs_print(langs.replace('<span sa-data-lang-title="中文">', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "<span sa-data-lang-title=\"中文\">"); examplejs_printLines = [];
+
+    examplejs_print(langs.replace('中文<!--{en}English--><!--{jp}日本語--></span>', 'jp'));
+    assert.equal(examplejs_printLines.join("\n"), "中文<!--{en}English--><!--{jp}日本語--></span>"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() case1", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    examplejs_print(langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en'));
+    assert.equal(examplejs_printLines.join("\n"), "console.info(\"English\")"); examplejs_printLines = [];
   });
           
 });

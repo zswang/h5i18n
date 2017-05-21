@@ -4,10 +4,8 @@ var path = require('path');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
 var packageInfo = require('./package.json');
-
-var compiler = require('./lib/compiler.js');
-
 var program = require('commander');
+var h5i18n = require('./');
 
 program
   .version(packageInfo.version)
@@ -23,15 +21,12 @@ var contents = [];
 var filenames = [];
 program.args.forEach(function (filename) {
   filenames.push(filename);
-  var i18n;
+  var languages = new h5i18n.Languages(program.defaultLang || 'cn', []);
+
   if (fs.existsSync(program.map)) {
-    i18n = JSON.parse(fs.readFileSync(program.map));
+    languages.dictionary(JSON.parse(fs.readFileSync(program.map)));
   }
-  contents.push(compiler.Compiler.replace(fs.readFileSync(filename), {
-    defaultLang: program.defaultLang,
-    locale: program.locale,
-    map: i18n,
-  }));
+  contents.push(languages.replace(fs.readFileSync(filename), program.locale));
 });
 var content = contents.join('\n');
 if (process.output) {

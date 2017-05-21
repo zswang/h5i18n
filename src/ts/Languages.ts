@@ -18,7 +18,7 @@ interface LangExpression {
   defaultText?: string
 }
 
-import { Emitter, createEmitter } from 'h5emitter/src/ts/Emitter'
+import { Emitter } from 'h5emitter/src/ts/Emitter'
 
 /*<function name="Languages">*/
 /*<jdists encoding="ejs" data="../../package.json">*/
@@ -252,7 +252,7 @@ let languages_attrs = ['alt', 'src', 'title', 'value', 'placeholder', 'label']
   // > 3
   ```
  */
-class Languages {
+class Languages extends Emitter {
 
   /**
    * 默认语言
@@ -273,8 +273,6 @@ class Languages {
    * 语言字典
    */
   _dictionarys: { [key: string]: string }
-
-  _emitter: Emitter;
 
   /**
    * 增加语言字典
@@ -342,27 +340,12 @@ class Languages {
    * @param _attrs 替换的属性列表
    */
   constructor(_defaultLang = 'cn', _attrs: string[]) {
+    super()
     this._defaultLang = _defaultLang
     this._locale = _defaultLang
 
     this._attrs = _attrs || languages_attrs
     this._dictionarys = {}
-    this._emitter = createEmitter()
-  }
-
-  on(event: string, fn: Function) {
-    this._emitter.on(event, fn)
-    return this
-  }
-
-  once(event: string, fn: Function) {
-    this._emitter.once(event, fn)
-    return this
-  }
-
-  off(event: string, fn: Function) {
-    this._emitter.off(event, fn)
-    return this
   }
 
   /**
@@ -463,7 +446,7 @@ class Languages {
 
     if (this._locale !== _locale) {
       this._locale = _locale
-      this._emitter.emit('change', _locale)
+      this.emit('change', _locale)
     }
 
     // run in node
@@ -606,6 +589,128 @@ class Languages {
       return
     }
     this.update(value)
+  }
+
+  /**
+   * 替换语言标记
+   *
+   * @param code 代码
+   * @param options 配置项
+   * @example Language:replace() quoted
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    console.log(langs.replace("language.get('点击<!--{en}click-->')", 'en'));
+    // > 'click'
+
+    console.log(langs.replace("language.get(`点击<!--{en}click-->`)", 'en'));
+    // > `click`
+
+    console.log(langs.replace("language.get(\"点击<!--{en}click-->\")", 'en'));
+    // > "click"
+    ```
+   * @example Language:replace() title
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    console.log(langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'jp'));
+    // > <title>サンプル</title>
+
+    console.log(langs.replace('<title data-a="start" data-lang-content="<!--{en}example--><!--{jp}サンプル-->" data-b="end">示例</title>', 'jp'));
+    // > <title data-a="start" data-b="end">サンプル</title>
+    ```
+   * @example Language:replace() attribute
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    console.log(langs.replace('<img src="cn.png" data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', 'jp'));
+    // > <img src="jp.png">
+
+    console.log(langs.replace('<img src="cn.png"title="标志"data-lang-title="<!--{jp}標識--><!--{en}logo-->"data-lang-src="<!--{jp}jp.png--><!--{en}en.png-->">', 'jp'));
+    // > <img src="jp.png"title="標識">
+    ```
+   * @example Language:replace() inner html
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    console.log(langs.replace('<span>中文<!--{en}English--><!--{jp}日本語--></span>', 'jp'));
+    // > <span>日本語</span>
+
+    console.log(langs.replace('<div title="中文" data-lang-title="<!--{jp}日本語--><!--{en}English-->"><div>中文<!--{en}English--><!--{jp}日本語--></div></div>', 'jp'));
+    // > <div title="日本語"><div>日本語</div></div>
+    ```
+   * @example Language:replace() map
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    langs.dictionary({
+      language: '<!--{en}English--><!--{jp}日本語-->'
+    });
+    console.log(langs.replace('<span>中文<!--{*}language--></span>', 'jp'));
+    // > <span>日本語</span>
+    ```
+   * @example Language:replace() coverage
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    console.log(langs.replace('<span sa-data-lang-title="中文">', 'jp'));
+    // > <span sa-data-lang-title="中文">
+
+    console.log(langs.replace('中文<!--{en}English--><!--{jp}日本語--></span>', 'jp'));
+    // > 中文<!--{en}English--><!--{jp}日本語--></span>
+    ```
+   * @example Language:replace() case1
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    console.log(langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en'));
+    // > console.info("English")
+    ```
+   */
+  replace(code: string, locale?: string) {
+    code = String(code).replace(/(?:(?:\w+\.)+)get\((['"`])(.*?-->)\1\)/g, (all, quoted, text) => {
+      // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
+      return quoted + this.get(text, locale) + quoted
+    }).replace(/<title(?=\s)((?:"[^"]*"|'[^']*'|[^'"<>])*?)\s+data-lang-content=('|")(.*?)\2((?:"[^"]*"|'[^']*'|[^'"<>])*)>([^]*?)<\/title>/g, (all, start, quoted, attr, end, content) => {
+      return `<title${start}${end}>${this.get(content + attr, locale)}</title>`
+    }).replace(/<("[^"]*"|'[^']*'|[^'"<>])+(data-lang-\w+)("[^"]*"|'[^']*'|[^'"<>])+>/g, (all) => {
+      // <input type="text" placeholder="中文" data-lang-placeholder="<!--{en}English--><!--{jp}日本語-->">
+      let dict = {}
+      all = all.replace(/((?:\s*)(?:[\w-])*)data-lang((?:-\w+)+)\s*=\s*(['"])([^]*?)(\3)/g,
+        (all, space, attr, quoted, text) => {
+          if (space.trim()) {
+            return all
+          }
+          dict[attr.slice(1)] = text
+          return space.trim()
+        }
+      )
+      Object.keys(dict).forEach((attr) => {
+        all = all.replace(new RegExp('([\'"\\s]' + attr + '\\s*=\\s*)([\'"])([^]*?)(\\2)', 'g'), (all, prefix, quoted, text) => {
+          return prefix + quoted + this.get(text + dict[attr], locale) + quoted
+        })
+      })
+      return all
+    })
+
+    do {
+      // <span>中文<!--{en}English--><!--{jp}日本語--></span>
+      let match = code.match(/((?:<!--\{(?:[\w*]+)\}.*?-->\s*)+)(<\/(\w+)>)/)
+      if (!match) {
+        break
+      }
+      let tag = match[3]
+      let text = match[1]
+      let left = RegExp['$`']
+      let right = match[2] + RegExp["$'"]
+
+      match = left.match(
+        new RegExp(`<(${tag})(?:"[^"]*"|'[^']*'|[^"'>])*>(?![^]*<\\1(?:"[^"]*"|'[^']*'|[^"'>])*>)`)
+      )
+
+      if (!match) {
+        break
+      }
+      text = RegExp["$'"] + text
+      left = left.slice(0, match.index) + match[0]
+      code = left + this.get(text, locale) + right
+
+    } while (true)
+
+    return code
   }
 
 } /*</function>*/
