@@ -30,24 +30,20 @@ gulp.task('reload', function () {
     .pipe(connect.reload())
 })
 
-gulp.task('build', function () {
+gulp.task('build', function (done) {
   gulp.src('./src/ts/*.ts')
     .pipe(typescript({
       target: 'ES5'
     }))
     .pipe(gulp.dest('./src/js'))
+    .on('end', done)
 })
 
-gulp.task('jdists', function () {
+gulp.task('jdists', ['build'], function () {
   gulp.src('./src/h5i18n.jdists.js')
     .pipe(jdists())
     .pipe(rename('h5i18n.js'))
     .pipe(gulp.dest('./'))
-
-  gulp.src('./src/compiler.jdists.js')
-    .pipe(jdists())
-    .pipe(rename('compiler.js'))
-    .pipe(gulp.dest('./lib/'))
 })
 
 gulp.task('open', function () {
@@ -78,5 +74,5 @@ global.h5i18n = require('../h5i18n.js');
     .pipe(gulp.dest('test'))
 })
 
-gulp.task('dist', ['build', 'jdists', 'uglify'])
-gulp.task('debug', ['build', 'jdists', 'connect', 'watch', 'open'])
+gulp.task('dist', ['jdists', 'uglify'])
+gulp.task('debug', ['jdists', 'connect', 'watch', 'open'])

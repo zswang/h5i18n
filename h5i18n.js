@@ -135,7 +135,7 @@ var Emitter = (function () {
  * @author
  *   zswang (http://weibo.com/zswang)
  * @version 0.6.0
- * @date 2017-05-21
+ * @date 2017-05-22
  * @license MIT
  */
 /**
