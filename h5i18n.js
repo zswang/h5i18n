@@ -134,7 +134,7 @@ var Emitter = (function () {
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.6.8
+ * @version 0.6.9
  * @date 2017-06-16
  * @license MIT
  */

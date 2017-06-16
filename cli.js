@@ -38,10 +38,10 @@ program.args.forEach(function (filename) {
         line += '  lang:\n'
         Object.keys(expr.optionsLang).forEach(function (lang) {
           var text = expr.optionsLang[lang].trim();
-          if (/["\n]/.test(text)) {
+          if (/["\n:]/.test(text)) {
             text = JSON.stringify(text);
           }
-          if (/[*\n]/.test(lang)) {
+          if (/["*\n:]/.test(lang)) {
             lang = JSON.stringify(lang);
           }
           line += '    ' + lang + ': ' + text + '\n';
