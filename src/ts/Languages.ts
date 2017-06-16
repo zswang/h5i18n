@@ -1,4 +1,10 @@
-interface LangExpression {
+import { Emitter } from 'h5emitter/src/ts/Emitter'
+
+export interface ReplaceCallback {
+  (type: 'code' | 'attribute' | 'title' | 'element', text: string)
+}
+
+export interface LangExpression {
   /**
    * 备选语言
    */
@@ -17,8 +23,6 @@ interface LangExpression {
    */
   defaultText?: string
 }
-
-import { Emitter } from 'h5emitter/src/ts/Emitter'
 
 /*<function name="Languages">*/
 /*<jdists encoding="ejs" data="../../package.json">*/
@@ -659,12 +663,58 @@ class Languages extends Emitter {
     console.log(langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en'));
     // > console.info("English")
     ```
+   * @example Language:replace() callback code
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var log = '';
+    langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+      log += 'type:' + type + ' text:' + text
+    });
+    console.log(log);
+    // > type:code text:中文<!--{en}English-->
+    ```
+   * @example Language:replace() callback attribute
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var log = '';
+    langs.replace('<div title="中文" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'en', function (type, text) {
+      log += 'type:' + type + ' text:' + text
+    });
+    console.log(log);
+    // > type:attribute text:中文<!--{jp}日本語--><!--{en}English-->
+    ```
+   * @example Language:replace() callback element
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var log = '';
+    langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+      log += 'type:' + type + ' text:' + text
+    });
+    console.log(log);
+    // > type:element text:中文<!--{en}English--><!--{jp}日本語-->
+    ```
+   * @example Language:replace() callback title
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var log = '';
+    langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+      log += 'type:' + type + ' text:' + text
+    });
+    console.log(log);
+    // > type:title text:示例<!--{en}example--><!--{jp}サンプル-->
+    ```
    */
-  replace(code: string, locale?: string) {
+  replace(code: string, locale?: string, callback?: ReplaceCallback) {
     code = String(code).replace(/(?:(?:\w+\.)+)get\((['"`])(.*?-->)\1\)/g, (all, quoted, text) => {
       // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
+      if (callback) {
+        callback('code', text)
+      }
       return quoted + this.get(text, locale) + quoted
     }).replace(/<title(?=\s)((?:"[^"]*"|'[^']*'|[^'"<>])*?)\s+data-lang-content=('|")(.*?)\2((?:"[^"]*"|'[^']*'|[^'"<>])*)>([^]*?)<\/title>/g, (all, start, quoted, attr, end, content) => {
+      if (callback) {
+        callback('title', content + attr)
+      }
       return `<title${start}${end}>${this.get(content + attr, locale)}</title>`
     }).replace(/<("[^"]*"|'[^']*'|[^'"<>])+(data-lang-\w+)("[^"]*"|'[^']*'|[^'"<>])+>/g, (all) => {
       // <input type="text" placeholder="中文" data-lang-placeholder="<!--{en}English--><!--{jp}日本語-->">
@@ -680,6 +730,11 @@ class Languages extends Emitter {
       )
       Object.keys(dict).forEach((attr) => {
         all = all.replace(new RegExp('([\'"\\s]' + attr + '\\s*=\\s*)([\'"])([^]*?)(\\2)', 'g'), (all, prefix, quoted, text) => {
+
+          if (callback) {
+            callback('attribute', text + dict[attr])
+          }
+
           return prefix + quoted + this.get(text + dict[attr], locale) + quoted
         })
       })
@@ -706,6 +761,10 @@ class Languages extends Emitter {
       }
       text = RegExp["$'"] + text
       left = left.slice(0, match.index) + match[0]
+
+      if (callback) {
+        callback('element', text)
+      }
       code = left + this.get(text, locale) + right
 
     } while (true)

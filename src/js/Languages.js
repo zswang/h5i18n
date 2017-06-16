@@ -604,13 +604,59 @@ var Languages = (function (_super) {
       console.log(langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en'));
       // > console.info("English")
       ```
+     * @example Language:replace() callback code
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var log = '';
+      langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+        log += 'type:' + type + ' text:' + text
+      });
+      console.log(log);
+      // > type:code text:中文<!--{en}English-->
+      ```
+     * @example Language:replace() callback attribute
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var log = '';
+      langs.replace('<div title="中文" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'en', function (type, text) {
+        log += 'type:' + type + ' text:' + text
+      });
+      console.log(log);
+      // > type:attribute text:中文<!--{jp}日本語--><!--{en}English-->
+      ```
+     * @example Language:replace() callback element
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var log = '';
+      langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+        log += 'type:' + type + ' text:' + text
+      });
+      console.log(log);
+      // > type:element text:中文<!--{en}English--><!--{jp}日本語-->
+      ```
+     * @example Language:replace() callback title
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var log = '';
+      langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+        log += 'type:' + type + ' text:' + text
+      });
+      console.log(log);
+      // > type:title text:示例<!--{en}example--><!--{jp}サンプル-->
+      ```
      */
-    Languages.prototype.replace = function (code, locale) {
+    Languages.prototype.replace = function (code, locale, callback) {
         var _this = this;
         code = String(code).replace(/(?:(?:\w+\.)+)get\((['"`])(.*?-->)\1\)/g, function (all, quoted, text) {
             // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
+            if (callback) {
+                callback('code', text);
+            }
             return quoted + _this.get(text, locale) + quoted;
         }).replace(/<title(?=\s)((?:"[^"]*"|'[^']*'|[^'"<>])*?)\s+data-lang-content=('|")(.*?)\2((?:"[^"]*"|'[^']*'|[^'"<>])*)>([^]*?)<\/title>/g, function (all, start, quoted, attr, end, content) {
+            if (callback) {
+                callback('title', content + attr);
+            }
             return "<title" + start + end + ">" + _this.get(content + attr, locale) + "</title>";
         }).replace(/<("[^"]*"|'[^']*'|[^'"<>])+(data-lang-\w+)("[^"]*"|'[^']*'|[^'"<>])+>/g, function (all) {
             // <input type="text" placeholder="中文" data-lang-placeholder="<!--{en}English--><!--{jp}日本語-->">
@@ -624,6 +670,9 @@ var Languages = (function (_super) {
             });
             Object.keys(dict).forEach(function (attr) {
                 all = all.replace(new RegExp('([\'"\\s]' + attr + '\\s*=\\s*)([\'"])([^]*?)(\\2)', 'g'), function (all, prefix, quoted, text) {
+                    if (callback) {
+                        callback('attribute', text + dict[attr]);
+                    }
                     return prefix + quoted + _this.get(text + dict[attr], locale) + quoted;
                 });
             });
@@ -645,6 +694,9 @@ var Languages = (function (_super) {
             }
             text = RegExp["$'"] + text;
             left = left.slice(0, match.index) + match[0];
+            if (callback) {
+                callback('element', text);
+            }
             code = left + this.get(text, locale) + right;
         } while (true);
         return code;

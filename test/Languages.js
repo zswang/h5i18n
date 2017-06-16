@@ -493,5 +493,49 @@ describe("src/ts/Languages.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "console.info(\"English\")"); examplejs_printLines = [];
   });
           
+  it("Language:replace() callback code", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var log = '';
+    langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+      log += 'type:' + type + ' text:' + text
+    });
+    examplejs_print(log);
+    assert.equal(examplejs_printLines.join("\n"), "type:code text:中文<!--{en}English-->"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() callback attribute", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var log = '';
+    langs.replace('<div title="中文" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'en', function (type, text) {
+      log += 'type:' + type + ' text:' + text
+    });
+    examplejs_print(log);
+    assert.equal(examplejs_printLines.join("\n"), "type:attribute text:中文<!--{jp}日本語--><!--{en}English-->"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() callback element", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var log = '';
+    langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+      log += 'type:' + type + ' text:' + text
+    });
+    examplejs_print(log);
+    assert.equal(examplejs_printLines.join("\n"), "type:element text:中文<!--{en}English--><!--{jp}日本語-->"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() callback title", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var log = '';
+    langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+      log += 'type:' + type + ' text:' + text
+    });
+    examplejs_print(log);
+    assert.equal(examplejs_printLines.join("\n"), "type:title text:示例<!--{en}example--><!--{jp}サンプル-->"); examplejs_printLines = [];
+  });
+          
 });
          
