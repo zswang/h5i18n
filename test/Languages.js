@@ -537,5 +537,17 @@ describe("src/ts/Languages.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "type:title text:示例<!--{en}example--><!--{jp}サンプル-->"); examplejs_printLines = [];
   });
           
+  it("Language:replace() callback code expr", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['en'] = 'English!!'
+      return expr;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "console.info(languages.get(\"中文<!--{en}English!!-->\"))"); examplejs_printLines = [];
+  });
+          
 });
          

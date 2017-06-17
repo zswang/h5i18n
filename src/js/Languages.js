@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var Emitter_1 = require("h5emitter/src/ts/Emitter");
-/*<function name="Languages">*/
+/*<function name="Languages" depend="Emitter">*/
 /*<jdists encoding="ejs" data="../../package.json">*/
 /**
  * @file <%- name %>
@@ -373,24 +373,36 @@ var Languages = (function (_super) {
     /**
      * 将语言表达式编译为文本
      *
-     * @param _lang 语言
+     * @param locale 语言
      * @param langExpression 语言表达式对象
+     * @param isOriginal 试用原始格式
      */
-    Languages.prototype.build = function (_lang, langExpression) {
+    Languages.prototype.build = function (locale, langExpression, isOriginal) {
+        if (isOriginal === void 0) { isOriginal = false; }
         var result = '';
         Object.keys(langExpression.optionsLang).forEach(function (lang) {
             var text = langExpression.optionsLang[lang];
-            if (lang === _lang) {
-                result += "<!--{" + lang + "}-->" + text + "<!--/{" + lang + "}-->";
+            if (lang === locale) {
+                if (isOriginal) {
+                    result = "" + text + result;
+                }
+                else {
+                    result += "<!--{" + lang + "}-->" + text + "<!--/{" + lang + "}-->";
+                }
             }
             else {
                 result += "<!--{" + lang + "}" + text + "-->";
             }
         });
-        if (!langExpression.optionsLang[_lang]) {
+        if (!langExpression.optionsLang[locale]) {
             var lang = this._defaultLang;
             var text = langExpression.optionsLang[this._defaultLang] || '';
-            result += "<!--{" + lang + "}-->" + text + "<!--/{" + lang + "}-->";
+            if (isOriginal) {
+                result = "" + text + result;
+            }
+            else {
+                result += "<!--{" + lang + "}-->" + text + "<!--/{" + lang + "}-->";
+            }
         }
         return result;
     };
@@ -644,13 +656,28 @@ var Languages = (function (_super) {
       console.log(log);
       // > type:title text:示例<!--{en}example--><!--{jp}サンプル-->
       ```
+     * @example Language:replace() callback code expr
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+        var expr = langs.parse(text);
+        expr.optionsLang['en'] = 'English!!'
+        return expr;
+      });
+      console.log(text);
+      // > console.info(languages.get("中文<!--{en}English!!-->"))
+      ```
      */
     Languages.prototype.replace = function (code, locale, callback) {
         var _this = this;
-        code = String(code).replace(/(?:(?:\w+\.)+)get\((['"`])(.*?-->)\1\)/g, function (all, quoted, text) {
+        code = String(code).replace(/((?:(?:\w+\.)+)get)\((['"`])(.*?-->)\2\)/g, function (all, prefix, quoted, text) {
             // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
             if (callback) {
-                callback('code', text);
+                var expr = callback('code', text);
+                if (expr) {
+                    var text_1 = _this.build(_this._locale, expr, true);
+                    return prefix + "(" + quoted + text_1 + quoted + ")";
+                }
             }
             return quoted + _this.get(text, locale) + quoted;
         }).replace(/<title(?=\s)((?:"[^"]*"|'[^']*'|[^'"<>])*?)\s+data-lang-content=('|")(.*?)\2((?:"[^"]*"|'[^']*'|[^'"<>])*)>([^]*?)<\/title>/g, function (all, start, quoted, attr, end, content) {

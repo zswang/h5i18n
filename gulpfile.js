@@ -58,10 +58,10 @@ gulp.task('uglify', function () {
     .pipe(gulp.dest('./'))
 })
 
-gulp.task('example', function() {
+gulp.task('example', function () {
   return gulp.src([
-      'src/ts/*.ts'
-    ])
+    'src/ts/*.ts'
+  ])
     .pipe(examplejs({
       header: `
 global.h5i18n = require('../h5i18n.js');

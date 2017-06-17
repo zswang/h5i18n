@@ -1,9 +1,5 @@
 import { Emitter } from 'h5emitter/src/ts/Emitter'
 
-export interface ReplaceCallback {
-  (type: 'code' | 'attribute' | 'title' | 'element', text: string)
-}
-
 export interface LangExpression {
   /**
    * 备选语言
@@ -24,7 +20,11 @@ export interface LangExpression {
   defaultText?: string
 }
 
-/*<function name="Languages">*/
+export interface ReplaceCallback {
+  (type: 'code' | 'attribute' | 'title' | 'element', text: string): LangExpression
+}
+
+/*<function name="Languages" depend="Emitter">*/
 /*<jdists encoding="ejs" data="../../package.json">*/
 /**
  * @file <%- name %>
@@ -415,25 +415,34 @@ class Languages extends Emitter {
   /**
    * 将语言表达式编译为文本
    *
-   * @param _lang 语言
+   * @param locale 语言
    * @param langExpression 语言表达式对象
+   * @param isOriginal 试用原始格式
    */
-  build(_lang: string, langExpression: LangExpression): string {
+  build(locale: string, langExpression: LangExpression, isOriginal: boolean = false): string {
     let result = ''
 
     Object.keys(langExpression.optionsLang).forEach((lang) => {
       let text = langExpression.optionsLang[lang]
-      if (lang === _lang) {
-        result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
+      if (lang === locale) {
+        if (isOriginal) {
+          result = `${text}${result}`
+        } else {
+          result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
+        }
       } else {
         result += `<!--{${lang}}${text}-->`
       }
-
     })
-    if (!langExpression.optionsLang[_lang]) {
+
+    if (!langExpression.optionsLang[locale]) {
       let lang = this._defaultLang
       let text = langExpression.optionsLang[this._defaultLang] || ''
-      result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
+      if (isOriginal) {
+        result = `${text}${result}`
+      } else {
+        result += `<!--{${lang}}-->${text}<!--/{${lang}}-->`
+      }
     }
 
     return result
@@ -703,12 +712,27 @@ class Languages extends Emitter {
     console.log(log);
     // > type:title text:示例<!--{en}example--><!--{jp}サンプル-->
     ```
+   * @example Language:replace() callback code expr
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['en'] = 'English!!'
+      return expr;
+    });
+    console.log(text);
+    // > console.info(languages.get("中文<!--{en}English!!-->"))
+    ```
    */
   replace(code: string, locale?: string, callback?: ReplaceCallback) {
-    code = String(code).replace(/(?:(?:\w+\.)+)get\((['"`])(.*?-->)\1\)/g, (all, quoted, text) => {
+    code = String(code).replace(/((?:(?:\w+\.)+)get)\((['"`])(.*?-->)\2\)/g, (all, prefix, quoted, text) => {
       // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
       if (callback) {
-        callback('code', text)
+        let expr = callback('code', text)
+        if (expr) {
+          let text = this.build(this._locale, expr, true)
+          return `${prefix}(${quoted}${text}${quoted})`
+        }
       }
       return quoted + this.get(text, locale) + quoted
     }).replace(/<title(?=\s)((?:"[^"]*"|'[^']*'|[^'"<>])*?)\s+data-lang-content=('|")(.*?)\2((?:"[^"]*"|'[^']*'|[^'"<>])*)>([^]*?)<\/title>/g, (all, start, quoted, attr, end, content) => {
