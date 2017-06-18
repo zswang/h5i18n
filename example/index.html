@@ -5,6 +5,18 @@
   <title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>
   <meta charset="utf-8">
   <link rel="stylesheet" href="./css/main.css">
+
+  <style>
+    header h1::after {
+      content: '(中文)';
+    }
+    html:lang(en) header h1::after {
+      content: '(English)';
+    }
+    html:lang(jp) header h1::after {
+      content: '(日本語)';
+    }
+  </style>
 </head>
 
 <body>
@@ -85,6 +97,9 @@
 <script>
   (function () {
     var languages = new h5i18n.Languages('cn')
+    languages.on('change', function () {
+      document.documentElement.setAttribute('lang', languages.locale);
+    });
     h5tap('body', '[cmd]', function (element) {
       var cmd = element.getAttribute('cmd');
       cmd.replace(/lang-([\w-]+)/, function (all, lang) {
