@@ -773,51 +773,51 @@ var Languages = (function (_super) {
      * @example Language:replace() callback attribute expr
       ```js
       var langs = new h5i18n.Languages('cn');
-      var text = langs.replace('<div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'jp', function (type, text) {
+      var text = langs.replace('<body><div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div></body>', 'jp', function (type, text) {
         var expr = langs.parse(text);
         expr.optionsLang['en'] = 'English!!';
         expr.optionsLang['ne'] = '🔥';
         return expr;
       });
       console.log(text);
-      // > <div title="日本語" data-lang-title="<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->" class="box"></div>
-      var text = langs.replace('<div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'jp', function (type, text) {
+      // > <body><div title="日本語" data-lang-title="<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->" class="box"></div></body>
+      var text = langs.replace('<body><div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div></body>', 'jp', function (type, text) {
         return false;
       });
       console.log(text);
-      // > <div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>
+      // > <body><div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div></body>
       ```
      * @example Language:replace() callback title expr
       ```js
       var langs = new h5i18n.Languages('cn');
-      var text = langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+      var text = langs.replace('<head><title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title></head>', 'en', function (type, text) {
         var expr = langs.parse(text);
         expr.optionsLang['ne'] = '🔥';
         return expr;
       });
       console.log(text);
-      // > <title data-lang-content="<!--{jp}サンプル--><!--{cn}示例--><!--{ne}🔥-->">example</title>
-      var text = langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+      // > <head><title data-lang-content="<!--{jp}サンプル--><!--{cn}示例--><!--{ne}🔥-->">example</title></head>
+      var text = langs.replace('<head><title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title></head>', 'en', function (type, text) {
         return false;
       });
       console.log(text);
-      // > <title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>
+      // > <head><title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title></head>
       ```
      * @example Language:replace() callback element expr
       ```js
       var langs = new h5i18n.Languages('cn');
-      var text = langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+      var text = langs.replace('<em></em><div>中文<!--{en}English--><!--{jp}日本語--></div><em></em>', 'en', function (type, text) {
         var expr = langs.parse(text);
         expr.optionsLang['ne'] = '🔥';
         return expr;
       });
       console.log(text);
-      // > <div>English<!--{jp}日本語--><!--{cn}中文--><!--{ne}🔥--></div>
-      var text = langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+      // > <em></em><div>English<!--{jp}日本語--><!--{cn}中文--><!--{ne}🔥--></div><em></em>
+      var text = langs.replace('<em></em><div>中文<!--{en}English--><!--{jp}日本語--></div><em></em>', 'en', function (type, text) {
         return false;
       });
       console.log(text);
-      // > <div>中文<!--{en}English--><!--{jp}日本語--></div>
+      // > <em></em><div>中文<!--{en}English--><!--{jp}日本語--></div><em></em>
       ```
      */
     Languages.prototype.replace = function (code, locale, callback) {
@@ -915,7 +915,8 @@ var Languages = (function (_super) {
             if (callback) {
                 var expr = callback('element', text);
                 if (expr === false) {
-                    return left + text + right;
+                    result += left + text + right;
+                    continue;
                 }
                 else if (expr) {
                     result += left + this.build(locale, expr, true) + right;

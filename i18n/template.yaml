@@ -1,0 +1,28 @@
+- file: ../example/debug.html
+  i18n:
+  - lang: 
+      en: Computer
+      jp: パソコン
+      cn: 电脑
+  - lang: 
+      en: Bike
+      jp: 自転車
+      cn: 自行车
+
+- file: ../example/index.html
+  i18n:
+  - lang: 
+      en: English
+      jp: 日本語
+      cn: 中文
+  - lang: 
+      "*": 813
+      cn: 中文
+  - lang: 
+      en: example
+      jp: サンプル
+      cn: 示例
+  - lang: 
+      jp: ./img/jp.png
+      en: ./img/en.png
+      cn: ./img/cn.png
