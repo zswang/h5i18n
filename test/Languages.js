@@ -396,6 +396,34 @@ describe("src/ts/Languages.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "none"); examplejs_printLines = [];
   });
           
+  it("build():base", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.build('hk', {
+      optionsLang: {
+        cn: '默认',
+        en: 'Default',
+      }
+    }, true);
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "默认<!--{cn}默认--><!--{en}Default-->"); examplejs_printLines = [];
+  });
+          
+  it("build():case 2", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.build('jp',
+      {
+        optionsLang: { jp: '日本語', en: 'English!!', cn: '中文', ne: '🔥' },
+        locale: null,
+        localeText: null,
+        defaultText: '中文'
+      }, true
+    );
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "日本語<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->"); examplejs_printLines = [];
+  });
+          
   it("Languages:get locale()", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');
@@ -431,6 +459,9 @@ describe("src/ts/Languages.ts", function () {
 
     examplejs_print(langs.replace("language.get(`点击<!--{en}click-->`)", 'en'));
     assert.equal(examplejs_printLines.join("\n"), "`click`"); examplejs_printLines = [];
+
+    examplejs_print(langs.replace("language.get(`点击<!--{en}click-->`)"));
+    assert.equal(examplejs_printLines.join("\n"), "`点击`"); examplejs_printLines = [];
 
     examplejs_print(langs.replace("language.get(\"点击<!--{en}click-->\")", 'en'));
     assert.equal(examplejs_printLines.join("\n"), "\"click\""); examplejs_printLines = [];
@@ -542,11 +573,72 @@ describe("src/ts/Languages.ts", function () {
     var langs = new h5i18n.Languages('cn');
     var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
       var expr = langs.parse(text);
-      expr.optionsLang['en'] = 'English!!'
+      expr.optionsLang['en'] = 'English!!';
       return expr;
     });
     examplejs_print(text);
-    assert.equal(examplejs_printLines.join("\n"), "console.info(languages.get(\"中文<!--{en}English!!-->\"))"); examplejs_printLines = [];
+    assert.equal(examplejs_printLines.join("\n"), "console.info(languages.get(\"English!!<!--{cn}中文-->\"))"); examplejs_printLines = [];
+
+    var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+      return false;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "console.info(languages.get(\"中文<!--{en}English-->\"))"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() callback attribute expr", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('<div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'jp', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['en'] = 'English!!';
+      expr.optionsLang['ne'] = '🔥';
+      return expr;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "<div title=\"日本語\" data-lang-title=\"<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->\" class=\"box\"></div>"); examplejs_printLines = [];
+
+    var text = langs.replace('<div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'jp', function (type, text) {
+      return false;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "<div title=\"中文\" class=\"box\" data-lang-title=\"<!--{jp}日本語--><!--{en}English-->\"></div>"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() callback title expr", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['ne'] = '🔥';
+      return expr;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "<title data-lang-content=\"<!--{jp}サンプル--><!--{cn}示例--><!--{ne}🔥-->\">example</title>"); examplejs_printLines = [];
+
+    var text = langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+      return false;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "<title data-lang-content=\"<!--{en}example--><!--{jp}サンプル-->\">示例</title>"); examplejs_printLines = [];
+  });
+          
+  it("Language:replace() callback element expr", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['ne'] = '🔥';
+      return expr;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "<div>English<!--{jp}日本語--><!--{cn}中文--><!--{ne}🔥--></div>"); examplejs_printLines = [];
+
+    var text = langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+      return false;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "<div>中文<!--{en}English--><!--{jp}日本語--></div>"); examplejs_printLines = [];
   });
           
 });

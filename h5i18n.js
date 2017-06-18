@@ -134,8 +134,8 @@ var Emitter = (function () {
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.6.12
- * @date 2017-06-17
+ * @version 0.7.0
+ * @date 2017-06-18
  * @license MIT
  */
 /**
@@ -454,7 +454,33 @@ var Languages = (function (_super) {
      * @param locale 语言
      * @param langExpression 语言表达式对象
      * @param isOriginal 试用原始格式
-     */
+     * @example build():base
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var text = langs.build('hk', {
+        optionsLang: {
+          cn: '默认',
+          en: 'Default',
+        }
+      }, true);
+      console.log(text);
+      // > 默认<!--{cn}默认--><!--{en}Default-->
+      ```
+     * @example build():case 2
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var text = langs.build('jp',
+        {
+          optionsLang: { jp: '日本語', en: 'English!!', cn: '中文', ne: '🔥' },
+          locale: null,
+          localeText: null,
+          defaultText: '中文'
+        }, true
+      );
+      console.log(text);
+      // > 日本語<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->
+      ```
+      */
     Languages.prototype.build = function (locale, langExpression, isOriginal) {
         if (isOriginal === void 0) { isOriginal = false; }
         var result = '';
@@ -636,6 +662,8 @@ var Languages = (function (_super) {
       // > 'click'
       console.log(langs.replace("language.get(`点击<!--{en}click-->`)", 'en'));
       // > `click`
+      console.log(langs.replace("language.get(`点击<!--{en}click-->`)"));
+      // > `点击`
       console.log(langs.replace("language.get(\"点击<!--{en}click-->\")", 'en'));
       // > "click"
       ```
@@ -731,72 +759,172 @@ var Languages = (function (_super) {
       var langs = new h5i18n.Languages('cn');
       var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
         var expr = langs.parse(text);
-        expr.optionsLang['en'] = 'English!!'
+        expr.optionsLang['en'] = 'English!!';
         return expr;
       });
       console.log(text);
-      // > console.info(languages.get("中文<!--{en}English!!-->"))
+      // > console.info(languages.get("English!!<!--{cn}中文-->"))
+      var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+        return false;
+      });
+      console.log(text);
+      // > console.info(languages.get("中文<!--{en}English-->"))
+      ```
+     * @example Language:replace() callback attribute expr
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var text = langs.replace('<div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'jp', function (type, text) {
+        var expr = langs.parse(text);
+        expr.optionsLang['en'] = 'English!!';
+        expr.optionsLang['ne'] = '🔥';
+        return expr;
+      });
+      console.log(text);
+      // > <div title="日本語" data-lang-title="<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->" class="box"></div>
+      var text = langs.replace('<div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'jp', function (type, text) {
+        return false;
+      });
+      console.log(text);
+      // > <div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>
+      ```
+     * @example Language:replace() callback title expr
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var text = langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+        var expr = langs.parse(text);
+        expr.optionsLang['ne'] = '🔥';
+        return expr;
+      });
+      console.log(text);
+      // > <title data-lang-content="<!--{jp}サンプル--><!--{cn}示例--><!--{ne}🔥-->">example</title>
+      var text = langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+        return false;
+      });
+      console.log(text);
+      // > <title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>
+      ```
+     * @example Language:replace() callback element expr
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var text = langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+        var expr = langs.parse(text);
+        expr.optionsLang['ne'] = '🔥';
+        return expr;
+      });
+      console.log(text);
+      // > <div>English<!--{jp}日本語--><!--{cn}中文--><!--{ne}🔥--></div>
+      var text = langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+        return false;
+      });
+      console.log(text);
+      // > <div>中文<!--{en}English--><!--{jp}日本語--></div>
       ```
      */
     Languages.prototype.replace = function (code, locale, callback) {
         var _this = this;
+        if (!locale) {
+            locale = this.locale;
+        }
         code = String(code).replace(/((?:(?:\w+\.)+)get)\((['"`])(.*?-->)\2\)/g, function (all, prefix, quoted, text) {
             // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
             if (callback) {
                 var expr = callback('code', text);
-                if (expr) {
-                    var text_1 = _this.build(_this._locale, expr, true);
+                if (expr === false) {
+                    return all;
+                }
+                else if (expr) {
+                    var text_1 = _this.build(locale, expr, true);
                     return prefix + "(" + quoted + text_1 + quoted + ")";
                 }
             }
             return quoted + _this.get(text, locale) + quoted;
         }).replace(/<title(?=\s)((?:"[^"]*"|'[^']*'|[^'"<>])*?)\s+data-lang-content=('|")(.*?)\2((?:"[^"]*"|'[^']*'|[^'"<>])*)>([^]*?)<\/title>/g, function (all, start, quoted, attr, end, content) {
             if (callback) {
-                callback('title', content + attr);
+                var expr = callback('title', content + attr);
+                if (expr === false) {
+                    return all;
+                }
+                else if (expr) {
+                    var temp = _this.build(locale, expr, true);
+                    var index = temp.indexOf('<!--');
+                    var left = temp.slice(0, index);
+                    var right = temp.slice(index);
+                    return "<title data-lang-content=" + quoted + right + quoted + start + end + ">" + left + "</title>";
+                }
             }
             return "<title" + start + end + ">" + _this.get(content + attr, locale) + "</title>";
-        }).replace(/<("[^"]*"|'[^']*'|[^'"<>])+(data-lang-\w+)("[^"]*"|'[^']*'|[^'"<>])+>/g, function (all) {
+        }).replace(/<(?!title\s)("[^"]*"|'[^']*'|[^'"<>])+(data-lang-\w+)("[^"]*"|'[^']*'|[^'"<>])+>/g, function (all) {
             // <input type="text" placeholder="中文" data-lang-placeholder="<!--{en}English--><!--{jp}日本語-->">
             var dict = {};
-            all = all.replace(/((?:\s*)(?:[\w-])*)data-lang((?:-\w+)+)\s*=\s*(['"])([^]*?)(\3)/g, function (all, space, attr, quoted, text) {
+            var result = all.replace(/((?:\s*)(?:[\w-])*)data-lang((?:-\w+)+)\s*=\s*(['"])([^]*?)(\3)/g, function (all, space, attr, quoted, text) {
                 if (space.trim()) {
                     return all;
                 }
                 dict[attr.slice(1)] = text;
                 return space.trim();
             });
-            Object.keys(dict).forEach(function (attr) {
-                all = all.replace(new RegExp('([\'"\\s]' + attr + '\\s*=\\s*)([\'"])([^]*?)(\\2)', 'g'), function (all, prefix, quoted, text) {
+            var fixed = 0;
+            var keys = Object.keys(dict);
+            keys.forEach(function (attr) {
+                result = result.replace(new RegExp('([\'"\\s]' + attr + '\\s*=\\s*)([\'"])([^]*?)(\\2)', 'g'), function (all, prefix, quoted, text) {
                     if (callback) {
-                        callback('attribute', text + dict[attr]);
+                        var expr = callback('attribute', text + dict[attr]);
+                        if (expr === false) {
+                            fixed++;
+                            return "" + prefix + quoted + text + quoted + " data-lang-" + attr + "=" + quoted + dict[attr] + quoted;
+                        }
+                        else if (expr) {
+                            var temp = _this.build(locale, expr, true);
+                            var index = temp.indexOf('<!--');
+                            var left = temp.slice(0, index);
+                            var right = temp.slice(index);
+                            return "" + prefix + quoted + left + quoted + " data-lang-" + attr + "=" + quoted + right + quoted;
+                        }
                     }
                     return prefix + quoted + _this.get(text + dict[attr], locale) + quoted;
                 });
             });
-            return all;
+            if (fixed === keys.length) {
+                return all;
+            }
+            else {
+                return result;
+            }
         });
+        var offset = 0;
+        var result = '';
         do {
             // <span>中文<!--{en}English--><!--{jp}日本語--></span>
-            var match = code.match(/((?:<!--\{(?:[\w*]+)\}.*?-->\s*)+)(<\/(\w+)>)/);
+            var match = code.slice(offset).match(/((?:<!--\{(?:[\w*]+)\}.*?-->\s*)+)(<\/(\w+)>)/);
             if (!match) {
+                result += code.slice(offset);
                 break;
             }
             var tag = match[3];
             var text = match[1];
             var left = RegExp['$`'];
-            var right = match[2] + RegExp["$'"];
-            match = left.match(new RegExp("<(" + tag + ")(?:\"[^\"]*\"|'[^']*'|[^\"'>])*>(?![^]*<\\1(?:\"[^\"]*\"|'[^']*'|[^\"'>])*>)"));
-            if (!match) {
+            var right = match[2];
+            var matchSub = left.match(new RegExp("<(" + tag + ")(?:\"[^\"]*\"|'[^']*'|[^\"'>])*>(?![^]*<\\1(?:\"[^\"]*\"|'[^']*'|[^\"'>])*>)"));
+            if (!matchSub) {
+                result += code.slice(offset);
                 break;
             }
+            offset += match.index + match[0].length;
             text = RegExp["$'"] + text;
-            left = left.slice(0, match.index) + match[0];
+            left = left.slice(0, matchSub.index) + matchSub[0];
             if (callback) {
-                callback('element', text);
+                var expr = callback('element', text);
+                if (expr === false) {
+                    return left + text + right;
+                }
+                else if (expr) {
+                    result += left + this.build(locale, expr, true) + right;
+                    continue;
+                }
             }
-            code = left + this.get(text, locale) + right;
+            result += left + this.get(text, locale) + right;
         } while (true);
-        return code;
+        return result;
     };
     return Languages;
 }(Emitter)); /*</function>*/

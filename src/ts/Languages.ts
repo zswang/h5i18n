@@ -21,7 +21,7 @@ export interface LangExpression {
 }
 
 export interface ReplaceCallback {
-  (type: 'code' | 'attribute' | 'title' | 'element', text: string): LangExpression
+  (type: 'code' | 'attribute' | 'title' | 'element', text: string): LangExpression | false
 }
 
 /*<function name="Languages" depend="Emitter">*/
@@ -418,7 +418,34 @@ class Languages extends Emitter {
    * @param locale 语言
    * @param langExpression 语言表达式对象
    * @param isOriginal 试用原始格式
-   */
+   * @example build():base
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.build('hk', {
+      optionsLang: {
+        cn: '默认',
+        en: 'Default',
+      }
+    }, true);
+    console.log(text);
+    // > 默认<!--{cn}默认--><!--{en}Default-->
+    ```
+   * @example build():case 2
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.build('jp',
+      {
+        optionsLang: { jp: '日本語', en: 'English!!', cn: '中文', ne: '🔥' },
+        locale: null,
+        localeText: null,
+        defaultText: '中文'
+      }, true
+    );
+    console.log(text);
+    // > 日本語<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->
+    ```
+
+    */
   build(locale: string, langExpression: LangExpression, isOriginal: boolean = false): string {
     let result = ''
 
@@ -618,6 +645,9 @@ class Languages extends Emitter {
     console.log(langs.replace("language.get(`点击<!--{en}click-->`)", 'en'));
     // > `click`
 
+    console.log(langs.replace("language.get(`点击<!--{en}click-->`)"));
+    // > `点击`
+
     console.log(langs.replace("language.get(\"点击<!--{en}click-->\")", 'en'));
     // > "click"
     ```
@@ -717,33 +747,106 @@ class Languages extends Emitter {
     var langs = new h5i18n.Languages('cn');
     var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
       var expr = langs.parse(text);
-      expr.optionsLang['en'] = 'English!!'
+      expr.optionsLang['en'] = 'English!!';
       return expr;
     });
     console.log(text);
-    // > console.info(languages.get("中文<!--{en}English!!-->"))
+    // > console.info(languages.get("English!!<!--{cn}中文-->"))
+
+    var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+      return false;
+    });
+    console.log(text);
+    // > console.info(languages.get("中文<!--{en}English-->"))
+    ```
+   * @example Language:replace() callback attribute expr
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('<div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'jp', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['en'] = 'English!!';
+      expr.optionsLang['ne'] = '🔥';
+      return expr;
+    });
+    console.log(text);
+    // > <div title="日本語" data-lang-title="<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->" class="box"></div>
+
+    var text = langs.replace('<div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>', 'jp', function (type, text) {
+      return false;
+    });
+    console.log(text);
+    // > <div title="中文" class="box" data-lang-title="<!--{jp}日本語--><!--{en}English-->"></div>
+    ```
+   * @example Language:replace() callback title expr
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['ne'] = '🔥';
+      return expr;
+    });
+    console.log(text);
+    // > <title data-lang-content="<!--{jp}サンプル--><!--{cn}示例--><!--{ne}🔥-->">example</title>
+
+    var text = langs.replace('<title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>', 'en', function (type, text) {
+      return false;
+    });
+    console.log(text);
+    // > <title data-lang-content="<!--{en}example--><!--{jp}サンプル-->">示例</title>
+    ```
+   * @example Language:replace() callback element expr
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['ne'] = '🔥';
+      return expr;
+    });
+    console.log(text);
+    // > <div>English<!--{jp}日本語--><!--{cn}中文--><!--{ne}🔥--></div>
+
+    var text = langs.replace('<div>中文<!--{en}English--><!--{jp}日本語--></div>', 'en', function (type, text) {
+      return false;
+    });
+    console.log(text);
+    // > <div>中文<!--{en}English--><!--{jp}日本語--></div>
     ```
    */
   replace(code: string, locale?: string, callback?: ReplaceCallback) {
+    if (!locale) {
+      locale = this.locale
+    }
     code = String(code).replace(/((?:(?:\w+\.)+)get)\((['"`])(.*?-->)\2\)/g, (all, prefix, quoted, text) => {
       // console.log(h5i18n.get('中国<!--{en}China--><!--{jp}中国--><!--{fr}Chine-->'))
       if (callback) {
         let expr = callback('code', text)
-        if (expr) {
-          let text = this.build(this._locale, expr, true)
+        if (expr === false) {
+          return all
+        } else if (expr) {
+          let text = this.build(locale, expr, true)
           return `${prefix}(${quoted}${text}${quoted})`
         }
       }
       return quoted + this.get(text, locale) + quoted
     }).replace(/<title(?=\s)((?:"[^"]*"|'[^']*'|[^'"<>])*?)\s+data-lang-content=('|")(.*?)\2((?:"[^"]*"|'[^']*'|[^'"<>])*)>([^]*?)<\/title>/g, (all, start, quoted, attr, end, content) => {
       if (callback) {
-        callback('title', content + attr)
+        let expr = callback('title', content + attr)
+        if (expr === false) {
+          return all
+        } else if (expr) {
+          let temp = this.build(locale, expr, true)
+          let index = temp.indexOf('<!--');
+          let left = temp.slice(0, index)
+          let right = temp.slice(index)
+
+          return `<title data-lang-content=${quoted}${right}${quoted}${start}${end}>${left}</title>`
+        }
       }
       return `<title${start}${end}>${this.get(content + attr, locale)}</title>`
-    }).replace(/<("[^"]*"|'[^']*'|[^'"<>])+(data-lang-\w+)("[^"]*"|'[^']*'|[^'"<>])+>/g, (all) => {
+    }).replace(/<(?!title\s)("[^"]*"|'[^']*'|[^'"<>])+(data-lang-\w+)("[^"]*"|'[^']*'|[^'"<>])+>/g, (all) => {
       // <input type="text" placeholder="中文" data-lang-placeholder="<!--{en}English--><!--{jp}日本語-->">
       let dict = {}
-      all = all.replace(/((?:\s*)(?:[\w-])*)data-lang((?:-\w+)+)\s*=\s*(['"])([^]*?)(\3)/g,
+      let result = all.replace(/((?:\s*)(?:[\w-])*)data-lang((?:-\w+)+)\s*=\s*(['"])([^]*?)(\3)/g,
         (all, space, attr, quoted, text) => {
           if (space.trim()) {
             return all
@@ -752,48 +855,78 @@ class Languages extends Emitter {
           return space.trim()
         }
       )
-      Object.keys(dict).forEach((attr) => {
-        all = all.replace(new RegExp('([\'"\\s]' + attr + '\\s*=\\s*)([\'"])([^]*?)(\\2)', 'g'), (all, prefix, quoted, text) => {
+      let fixed = 0
+      let keys = Object.keys(dict)
+      keys.forEach((attr) => {
+        result = result.replace(new RegExp('([\'"\\s]' + attr + '\\s*=\\s*)([\'"])([^]*?)(\\2)', 'g'), (all, prefix, quoted, text) => {
 
           if (callback) {
-            callback('attribute', text + dict[attr])
+            let expr = callback('attribute', text + dict[attr])
+            if (expr === false) {
+              fixed++
+              return `${prefix}${quoted}${text}${quoted} data-lang-${attr}=${quoted}${dict[attr]}${quoted}`
+            } else if (expr) {
+              let temp = this.build(locale, expr, true)
+              let index = temp.indexOf('<!--');
+              let left = temp.slice(0, index)
+              let right = temp.slice(index)
+
+              return `${prefix}${quoted}${left}${quoted} data-lang-${attr}=${quoted}${right}${quoted}`
+            }
           }
 
           return prefix + quoted + this.get(text + dict[attr], locale) + quoted
         })
       })
-      return all
+      if (fixed === keys.length) { // 均没有变化
+        return all
+      } else {
+        return result
+      }
     })
 
+    let offset = 0
+    let result = ''
     do {
       // <span>中文<!--{en}English--><!--{jp}日本語--></span>
-      let match = code.match(/((?:<!--\{(?:[\w*]+)\}.*?-->\s*)+)(<\/(\w+)>)/)
+      let match = code.slice(offset).match(/((?:<!--\{(?:[\w*]+)\}.*?-->\s*)+)(<\/(\w+)>)/)
       if (!match) {
+        result += code.slice(offset)
         break
       }
       let tag = match[3]
       let text = match[1]
       let left = RegExp['$`']
-      let right = match[2] + RegExp["$'"]
+      let right = match[2]
 
-      match = left.match(
+      let matchSub = left.match(
         new RegExp(`<(${tag})(?:"[^"]*"|'[^']*'|[^"'>])*>(?![^]*<\\1(?:"[^"]*"|'[^']*'|[^"'>])*>)`)
       )
 
-      if (!match) {
+      if (!matchSub) {
+        result += code.slice(offset)
         break
       }
+
+      offset += match.index + match[0].length
+
       text = RegExp["$'"] + text
-      left = left.slice(0, match.index) + match[0]
+      left = left.slice(0, matchSub.index) + matchSub[0]
 
       if (callback) {
-        callback('element', text)
+        let expr = callback('element', text)
+        if (expr === false) {
+          return left + text + right
+        } else if (expr) {
+          result += left + this.build(locale, expr, true) + right
+          continue
+        }
       }
-      code = left + this.get(text, locale) + right
+      result += left + this.get(text, locale) + right
 
     } while (true)
 
-    return code
+    return result
   }
 
 } /*</function>*/
