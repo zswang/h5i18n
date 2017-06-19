@@ -394,7 +394,7 @@ class Languages extends Emitter {
     }
 
     if (result.optionsLang['*'] !== undefined) {
-      let t: LangExpression;
+      let t: LangExpression
       if (result.optionsLang['*'] === '') {
         t = this.parse(this._dictionarys[text])
       } else {
@@ -835,7 +835,7 @@ class Languages extends Emitter {
           return all
         } else if (expr) {
           let temp = this.build(locale, expr, true)
-          let index = temp.indexOf('<!--');
+          let index = temp.indexOf('<!--')
           let left = temp.slice(0, index)
           let right = temp.slice(index)
 
@@ -867,7 +867,7 @@ class Languages extends Emitter {
               return `${prefix}${quoted}${text}${quoted} data-lang-${attr}=${quoted}${dict[attr]}${quoted}`
             } else if (expr) {
               let temp = this.build(locale, expr, true)
-              let index = temp.indexOf('<!--');
+              let index = temp.indexOf('<!--')
               let left = temp.slice(0, index)
               let right = temp.slice(index)
 
