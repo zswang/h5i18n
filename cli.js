@@ -44,8 +44,8 @@ if (program.update) {
         updateItems[langs.build(langs.locale, {
           optionsLang: sub.lang
         }, true)] = {
-          optionsLang: sub.update
-        }
+            optionsLang: sub.update
+          }
       }
     })
 
@@ -106,10 +106,10 @@ filenames.forEach(function (filename) {
         var line = '  - lang: \n';
         Object.keys(expr.optionsLang).forEach(function (lang) {
           var text = expr.optionsLang[lang].trim();
-          if (/["\n:]/.test(text)) {
+          if (/["\n{}\[\]:]/.test(text)) {
             text = JSON.stringify(text);
           }
-          if (/["*\n:]/.test(lang)) {
+          if (/["\n{}\[\]:*]/.test(lang)) {
             lang = JSON.stringify(lang);
           }
           line += '      ' + lang + ': ' + text + '\n';
