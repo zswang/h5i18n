@@ -424,6 +424,18 @@ describe("src/ts/Languages.ts", function () {
     assert.equal(examplejs_printLines.join("\n"), "日本語<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->"); examplejs_printLines = [];
   });
           
+  it("build():case 3", function () {
+    examplejs_printLines = [];
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.build('jp',
+      {
+        optionsLang: { jp: '日本語', todo: null },
+      }, true
+    );
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "日本語<!--{todo}-->"); examplejs_printLines = [];
+  });
+          
   it("Languages:get locale()", function () {
     examplejs_printLines = [];
     var langs = new h5i18n.Languages('cn');

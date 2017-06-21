@@ -402,13 +402,23 @@ var Languages = (function (_super) {
       console.log(text);
       // > 日本語<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->
       ```
-  
+     * @example build():case 3
+      ```js
+      var langs = new h5i18n.Languages('cn');
+      var text = langs.build('jp',
+        {
+          optionsLang: { jp: '日本語', todo: null },
+        }, true
+      );
+      console.log(text);
+      // > 日本語<!--{todo}-->
+      ```
       */
     Languages.prototype.build = function (locale, langExpression, isOriginal) {
         if (isOriginal === void 0) { isOriginal = false; }
         var result = '';
         Object.keys(langExpression.optionsLang).forEach(function (lang) {
-            var text = langExpression.optionsLang[lang];
+            var text = langExpression.optionsLang[lang] || '';
             if (lang === locale) {
                 if (isOriginal) {
                     result = "" + text + result;

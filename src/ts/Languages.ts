@@ -444,13 +444,23 @@ class Languages extends Emitter {
     console.log(text);
     // > 日本語<!--{en}English!!--><!--{cn}中文--><!--{ne}🔥-->
     ```
-
+   * @example build():case 3
+    ```js
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.build('jp',
+      {
+        optionsLang: { jp: '日本語', todo: null },
+      }, true
+    );
+    console.log(text);
+    // > 日本語<!--{todo}-->
+    ```
     */
   build(locale: string, langExpression: LangExpression, isOriginal: boolean = false): string {
     let result = ''
 
     Object.keys(langExpression.optionsLang).forEach((lang) => {
-      let text = langExpression.optionsLang[lang]
+      let text = langExpression.optionsLang[lang] || ''
       if (lang === locale) {
         if (isOriginal) {
           result = `${text}${result}`
