@@ -591,6 +591,15 @@ describe("src/ts/Languages.ts", function () {
     examplejs_print(text);
     assert.equal(examplejs_printLines.join("\n"), "console.info(languages.get(\"English!!<!--{cn}中文-->\"))"); examplejs_printLines = [];
 
+    var langs = new h5i18n.Languages('cn');
+    var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+      var expr = langs.parse(text);
+      expr.optionsLang['en'] = '"English\'';
+      return expr;
+    });
+    examplejs_print(text);
+    assert.equal(examplejs_printLines.join("\n"), "console.info(languages.get(\"\\\"English'<!--{cn}中文-->\"))"); examplejs_printLines = [];
+
     var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
       return false;
     });

@@ -707,6 +707,15 @@ var Languages = (function (_super) {
       console.log(text);
       // > console.info(languages.get("English!!<!--{cn}中文-->"))
   
+      var langs = new h5i18n.Languages('cn');
+      var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
+        var expr = langs.parse(text);
+        expr.optionsLang['en'] = '"English\'';
+        return expr;
+      });
+      console.log(text);
+      // > console.info(languages.get("\"English'<!--{cn}中文-->"))
+  
       var text = langs.replace('console.info(languages.get("中文<!--{en}English-->"))', 'en', function (type, text) {
         return false;
       });
@@ -780,6 +789,12 @@ var Languages = (function (_super) {
                 }
                 else if (expr) {
                     var text_1 = _this.build(locale, expr, true);
+                    text_1 = text_1.replace(/\\.|[\\'"]/g, function (all) {
+                        if (all === '\\' || all === quoted) {
+                            return "\\" + all;
+                        }
+                        return all;
+                    });
                     return prefix + "(" + quoted + text_1 + quoted + ")";
                 }
             }
