@@ -15,6 +15,22 @@ var langs = new h5i18n.Languages('cn');
 langs.update('en');
 ```
 
+## API
+
+### 更新语言环境
+
+```js
+// function update (locale?: string)
+langs.update('en');
+```
+
+### 获取文本
+
+```js
+// function get (text: string, locale?: string)
+langs.get('中文<!--{en}English-->');
+```
+
 ## License
 
 MIT © [zswang](http://weibo.com/zswang)
