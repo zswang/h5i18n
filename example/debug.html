@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <meta charset="utf8">
+    <style>
+    footer {
+      text-align: center;
+    }
+    </style>
+  </head>
+  <body>
+    <select>
+      <option>计算机<!--{en}Computer2--><!--{jp}パソコン2--><!--{jp3}パソコン2--><!--{jp4}パソコン2--></option>
+      <option>自行车<!--{en}Bike--><!--{jp}自転車--></option>
+      <option>摩托车<!--{todo}--></option>
+    </select>
+  </body>
+  <script src="../h5i18n.js"></script>
+  <script>
+    var arr = ['cn', 'jp', 'en'];
+    var languages = new h5i18n.Languages('cn');
+    var index = 0;
+    setInterval(function () {
+      languages.update(arr[(++index) % arr.length]);
+    }, 5000);
+  </script>
+  <footer>
+    <a href="https://github.com/zswang/h5i18n">前往项目地址</a>
+  </footer>
+</html>
