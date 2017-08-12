@@ -1,0 +1,1 @@
+h5i18n -e ./*.html -o ./i18n/all.yaml

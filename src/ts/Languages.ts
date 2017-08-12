@@ -510,7 +510,7 @@ class Languages extends Emitter {
       parent = document.querySelector(parent)
     }
 
-    // 处理文本节点
+    // 处理注释节点
     let nodeIterator = document.createNodeIterator(
       (parent as Node), NodeFilter.SHOW_COMMENT, null, false
     )

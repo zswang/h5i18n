@@ -1,0 +1,1 @@
+h5i18n -u ./i18n/update.yaml
