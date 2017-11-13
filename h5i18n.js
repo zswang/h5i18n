@@ -134,8 +134,8 @@ var Emitter = (function () {
  * A mobile page of internationalization development framework
  * @author
  *   zswang (http://weibo.com/zswang)
- * @version 0.7.7
- * @date 2017-07-17
+ * @version 0.7.8
+ * @date 2017-11-13
  * @license MIT
  */
 /**
@@ -544,7 +544,7 @@ var Languages = (function (_super) {
         else if (typeof parent === 'string') {
             parent = document.querySelector(parent);
         }
-        // 处理文本节点
+        // 处理注释节点
         var nodeIterator = document.createNodeIterator(parent, NodeFilter.SHOW_COMMENT, null, false);
         var processNodes = [];
         var processTexts = [];

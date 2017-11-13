@@ -466,7 +466,7 @@ var Languages = (function (_super) {
         else if (typeof parent === 'string') {
             parent = document.querySelector(parent);
         }
-        // 处理文本节点
+        // 处理注释节点
         var nodeIterator = document.createNodeIterator(parent, NodeFilter.SHOW_COMMENT, null, false);
         var processNodes = [];
         var processTexts = [];
